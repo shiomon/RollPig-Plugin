@@ -44,8 +44,8 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 | `#找猪` / `#搜猪` 关键词 | 搜索 PigHub 本地缓存，单条直接发送，多条转发消息 |
 
 ### 按钮
-官机QQBot用
-每条猪猪消息底部附带 5 个按钮（分 2 行），点击直接触发对应指令：
+仅QQBot可用
+每条猪猪消息底部附带 5 个按钮（分 2 行），点击填入输入框后发送：
 
 ```
 今日猪猪 | 猪猪菜肴 | 猪猪排行
@@ -56,7 +56,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 
 - 102 种本地猪猪资源，sha256 哈希选猪稳定可复现
 - PigHub 图片首次启动自动同步到本地，6 路并发增量更新，离线可用
-- 群聊、私聊通用
+- 群聊、私聊通用，每个群和私聊数据独立存储
 - 本地 JSON 存储收集记录，内存缓冲 + debounce 1 秒落盘
 - 个人猪圈使用 Puppeteer 动态生成，未解锁猪猪灰色显示
 - 配种般配度算法 + 每日 1 次限制
@@ -83,7 +83,7 @@ PigHub 部分资源的原文件名扩展名与实际内容格式不同，`images
 
 不使用 Redis，纯本地 JSON 文件：
 
-- `data/group/users.json`：群聊用户收集记录
+- `data/group/{群号}/users.json`：每个群独立的用户收集记录
 - `data/private/users.json`：私聊用户收集记录
 
 内存缓冲 + debounce 1 秒落盘 + beforeExit 兜底，避免频繁 IO。
@@ -104,6 +104,15 @@ PigHub 部分资源的原文件名扩展名与实际内容格式不同，`images
 - 新增 `#猪猪菜肴` 指令（30 道菜 + 猪猪点评）
 - 新增 `#猪猪排行` 指令（Top50 头像+进度条）
 - 新增 `#猪猪配种` 指令（般配度+双方共享图鉴+每日1次）
+- 新增 `#找猪`/`#搜猪` 指令（PigHub 搜索）
+- 每个群和私聊数据独立存储（`data/group/{群号}/users.json`）
+- 按钮改为 input 类型，点击填入输入框后手动发送
+- QQBot 适配：`getGroupMemberInfo` 获取昵称、`getAvatarUrl` 获取头像
+- `pickMember` 不转 `Number()`，兼容 QQBot openid 字符串
+- Google Fonts 加载 `Noto Color Emoji` 显示 emoji
+- 今日猪猪：新猪"🎉 抓到一只新猪猪啦~"、旧猪"🎉 第N次抽到这只猪猪~"
+- 图鉴标题加 🐷 emoji，排行标题加 🐷 emoji
+- 共遇见和本命猪合并到同一行显示
 
 ## 来源
 
