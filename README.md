@@ -5,12 +5,12 @@ TRSS-Yunzai 猪猪插件，提供每日猪猪、PigHub 随机猪猪、配种、�
 ## 安装
 
 ```bash
-# 方式一：git clone（推荐）
-cd plugins
-git clone https://github.com/shiomon/RollPig-Plugin.git rollpig-plugin
+cd Yunzai
+# 方式一：
+git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
 
-# 方式二：git submodule
-git submodule add https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
+# 方式二：国内环境
+git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
 ```
 
 安装后重启 Yunzai 即可，首次启动自动同步 PigHub 图片资源到本地。
@@ -42,7 +42,7 @@ git submodule add https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-
 | `#猪猪菜肴` [@群友] | 用今日猪猪（自己或指定群友的）做随机菜肴，附猪猪点评 |
 
 ### 按钮
-
+官机QQBot用
 每条猪猪消息底部附带 5 个按钮（分 2 行），点击直接触发对应指令：
 
 ```
