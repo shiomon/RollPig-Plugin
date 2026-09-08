@@ -67,8 +67,23 @@ async function getMemberName(e, userId) {
     if (!member) return null
     if (member.card) return member.card
     if (member.nickname) return member.nickname
+    const memberInfo = await member.getGroupMemberInfo?.()
+    if (memberInfo?.nickname) return memberInfo.nickname
+    if (memberInfo?.user_name) return memberInfo.user_name
     const info = await member.getInfo?.()
     return info?.nickname || info?.card || info?.user_name || null
+  } catch {
+    return null
+  }
+}
+
+function getMemberAvatar(e, userId) {
+  try {
+    const member = e.bot?.pickMember?.(e.group_id, Number(userId))
+    if (!member) return null
+    if (typeof member.getAvatarUrl === "function") return member.getAvatarUrl()
+    if (member.avatar) return member.avatar
+    return null
   } catch {
     return null
   }
@@ -367,15 +382,7 @@ export class TodayPig extends plugin {
 
       await Promise.all(top.map(u => (async () => {
         let userName = await getMemberName(e, u.userId) || `用户${u.userId.slice(-4)}`
-        let userAvatar = ""
-        try {
-          const member = e.bot?.pickMember?.(e.group_id, Number(u.userId))
-          if (member) {
-            const info = await member.getInfo?.()
-            if (info?.avatar) userAvatar = info.avatar
-          }
-        } catch (_) {}
-        if (!userAvatar) userAvatar = `https://q1.qlogo.cn/g?b=qq&nk=${u.userId}&s=100`
+        let userAvatar = getMemberAvatar(e, u.userId) || `https://q1.qlogo.cn/g?b=qq&nk=${u.userId}&s=100`
         u.userName = userName
         u.userAvatar = userAvatar
         u.isCurrent = String(u.userId) === String(e.user_id)

@@ -22,10 +22,10 @@ export function generateRankHTML(top, total) {
 <html>
 <head>
 <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif; padding: 24px; width: 700px; }
+  body { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); font-family: 'Noto Sans SC', 'Noto Color Emoji', 'Microsoft YaHei', 'PingFang SC', sans-serif; padding: 24px; width: 700px; }
   .header { text-align: center; margin-bottom: 20px; }
   .title { font-size: 26px; color: #4a4a4a; font-weight: bold; }
   .subtitle { font-size: 14px; color: #aaa; margin-top: 6px; }
@@ -49,7 +49,7 @@ export function generateRankHTML(top, total) {
 </head>
 <body>
   <div class="header">
-    <div class="title">小猪图鉴排行</div>
+    <div class="title">🐷 小猪图鉴排行</div>
     <div class="subtitle">共 ${top.length} 位用户 | 总数 ${total} 只小猪</div>
   </div>
   ${rows}
