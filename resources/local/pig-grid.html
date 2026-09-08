@@ -134,11 +134,8 @@
         </div>
         {{if showStats}}
         <div class="stats">
-          <div>📦 已收集：{{ownedCount}} / {{total}}</div>
-          <div>⭐ 收集率：{{rate}}%　🐷 共遇见：{{totalCount}} 次</div>
-          {{if favorite}}
-          <div class="favorite">本命猪：{{favorite.name}}（{{favorite.count}} 次）</div>
-          {{/if}}
+          <div>📦 已收集：{{ownedCount}} / {{total}}　⭐ 收集率：{{rate}}%</div>
+          <div>🐷 共遇见：{{totalCount}} 次　{{if favorite}}❤ 本命猪：{{favorite.name}} ×{{favorite.count}}{{/if}}</div>
         </div>
         {{/if}}
       </header>
