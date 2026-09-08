@@ -5,12 +5,12 @@ TRSS-Yunzai 猪猪插件，提供每日猪猪、PigHub 随机猪猪、配种、�
 ## 安装
 
 cd Yunzai
-# 方式一：
+方式一：
 ```bash
 git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
 ```
 
-# 方式二：国内环境
+方式二：国内环境
 ```bash
 git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
 ```
@@ -36,12 +36,12 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 | 指令 | 说明 |
 | --- | --- |
 | `#今日猪猪` / `#今日小猪` / `#每日猪猪` | 基于 sha256(date:userId) 哈希取模的每日稳定猪猪，表情包发送，自动记录收集 |
-| `#随机猪猪` / `#随机小猪` [数量] | 从 PigHub 本地缓存随机抽取，表情包发送，可指定数量（默认1，最大20） |
-| `#找猪` / `#搜猪` 关键词 | 搜索 PigHub 本地缓存，单条直接发送，多条转发消息 |
 | `#我的猪圈` | Puppeteer 动态渲染个人猪圈，含收集率、遇见次数、每只猪获得次数，未解锁灰色显示 |
 | `#猪猪配种` @某人 | 计算两只猪猪的般配度，双方互相收录对方今日猪，每人每日限 1 次 |
 | `#猪猪排行` | 群聊用户收集种类排行 Top50，含头像、昵称、进度条 |
 | `#猪猪菜肴` [@群友] | 用今日猪猪（自己或指定群友的）做随机菜肴，附猪猪点评 |
+| `#随机猪猪` / `#随机小猪` [数量] | 从 PigHub 本地缓存随机抽取，表情包发送，可指定数量（默认1，最大20） |
+| `#找猪` / `#搜猪` 关键词 | 搜索 PigHub 本地缓存，单条直接发送，多条转发消息 |
 
 ### 按钮
 官机QQBot用
