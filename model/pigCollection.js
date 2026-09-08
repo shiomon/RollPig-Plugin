@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename)
 const DATA_DIR = path.join(__dirname, '..', 'data')
 const GROUP_USERS_PATH = path.join(DATA_DIR, 'group', 'users.json')
 const PRIVATE_USERS_PATH = path.join(DATA_DIR, 'private', 'users.json')
-const OLD_RECORDS_PATH = path.join(DATA_DIR, 'records.json')
+
 
 let groupUserRecords = {}
 let privateUserRecords = {}
@@ -27,25 +27,7 @@ function loadUsersFile(filePath) {
   return {}
 }
 
-function migrateOldRecords() {
-  if (!fs.existsSync(OLD_RECORDS_PATH)) return
-  try {
-    const oldRecords = JSON.parse(fs.readFileSync(OLD_RECORDS_PATH, 'utf-8'))
-    for (const userId of Object.keys(oldRecords)) {
-      normalizeCollected(oldRecords[userId])
-    }
-    const groupDir = path.join(DATA_DIR, 'group')
-    if (!fs.existsSync(groupDir)) fs.mkdirSync(groupDir, { recursive: true })
-    fs.writeFileSync(GROUP_USERS_PATH, JSON.stringify(oldRecords, null, 2))
-    fs.unlinkSync(OLD_RECORDS_PATH)
-    logger.info(`[RollPig-Plugin] 迁移了 ${Object.keys(oldRecords).length} 条旧用户数据到 group/users.json`)
-  } catch (err) {
-    logger.error('[RollPig-Plugin] 旧数据迁移失败:', err)
-  }
-}
-
 function loadData() {
-  migrateOldRecords()
   groupUserRecords = loadUsersFile(GROUP_USERS_PATH)
   privateUserRecords = loadUsersFile(PRIVATE_USERS_PATH)
 }
@@ -110,10 +92,6 @@ export function getTodayPigId(e, userId, date) {
   return null
 }
 
-export function getUserRecord(e, userId) {
-  const userRecords = getUserRecords(e)
-  return normalizeCollected(userRecords[String(userId)] || {})
-}
 
 export function recordBreed(e, userIds, breedPigId, breedKey) {
   const userRecords = getUserRecords(e)

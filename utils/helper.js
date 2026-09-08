@@ -2,12 +2,12 @@ export function getButtons() {
   return segment.button(
     [
       { text: "今日猪猪", callback: "/今日猪猪" },
-      { text: "小猪菜肴", callback: "/小猪菜肴" },
-      { text: "小猪排行", callback: "/小猪排行" }
+      { text: "猪猪菜肴", callback: "/猪猪菜肴" },
+      { text: "猪猪排行", callback: "/猪猪排行" }
     ],
     [
       { text: "我的猪圈", callback: "/我的猪圈" },
-      { text: "小猪配种", callback: "/小猪配种" }
+      { text: "猪猪配种", callback: "/猪猪配种" }
     ]
   )
 }
