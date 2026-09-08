@@ -127,15 +127,15 @@
     >
       <header class="header">
         <div>
-          <div class="title">{{title}}</div>
           {{if owner}}
-          <div class="owner">{{owner}}</div>
+          <div class="title">{{owner}}</div>
           {{/if}}
         </div>
         {{if showStats}}
         <div class="stats">
-          <div>📦 已收集：{{ownedCount}} / {{total}}　⭐ 收集率：{{rate}}%</div>
-          <div>🐷 共遇见：{{totalCount}} 次　{{if favorite}}❤ 本命猪：{{favorite.name}} ×{{favorite.count}}{{/if}}</div>
+          <div>已收集：{{ownedCount}}/{{total}}</div>
+          <div>收集率：{{rate}}%</div>
+          <div>{{if favorite}}本命猪：{{favorite.name}} ×{{favorite.count}}　{{/if}}共遇见：{{totalCount}}次</div>
         </div>
         {{/if}}
       </header>
