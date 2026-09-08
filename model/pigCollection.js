@@ -6,12 +6,9 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const DATA_DIR = path.join(__dirname, '..', 'data')
-const GROUP_USERS_PATH = path.join(DATA_DIR, 'group', 'users.json')
 const PRIVATE_USERS_PATH = path.join(DATA_DIR, 'private', 'users.json')
 
-let groupUserRecords = {}
-let privateUserRecords = {}
-let dirty = false
+const caches = new Map()
 let _saveTimer = null
 
 function loadUsersFile(filePath) {
@@ -24,43 +21,55 @@ function loadUsersFile(filePath) {
   }
 }
 
-function ensureDataDirs() {
-  fs.mkdirSync(path.join(DATA_DIR, 'group'), { recursive: true })
-  fs.mkdirSync(path.join(DATA_DIR, 'private'), { recursive: true })
+function getRecordKey(e) {
+  return e.group_id ? `group:${e.group_id}` : 'private'
 }
 
-function loadData() {
-  groupUserRecords = loadUsersFile(GROUP_USERS_PATH)
-  privateUserRecords = loadUsersFile(PRIVATE_USERS_PATH)
+function getFilePath(key) {
+  if (key === 'private') return PRIVATE_USERS_PATH
+  return path.join(DATA_DIR, 'group', String(key.slice(6)), 'users.json')
 }
 
-function saveData() {
-  if (!dirty) return
-  try {
-    fs.writeFileSync(GROUP_USERS_PATH, JSON.stringify(groupUserRecords, null, 2))
-    fs.writeFileSync(PRIVATE_USERS_PATH, JSON.stringify(privateUserRecords, null, 2))
-    dirty = false
-    logger.debug('[RollPig-Plugin] 数据已落盘')
-  } catch (err) {
-    logger.error('[RollPig-Plugin] 数据保存失败:', err)
+function getCache(e) {
+  const key = getRecordKey(e)
+  let cache = caches.get(key)
+  if (!cache) {
+    cache = { data: loadUsersFile(getFilePath(key)), dirty: false }
+    caches.set(key, cache)
   }
+  return cache
 }
 
-function markDirty() {
-  dirty = true
+function getUserRecords(e) {
+  return getCache(e).data
+}
+
+function markDirty(e) {
+  getCache(e).dirty = true
   if (_saveTimer) clearTimeout(_saveTimer)
   _saveTimer = setTimeout(() => saveData(), 1000)
 }
 
+function saveData() {
+  for (const [key, cache] of caches) {
+    if (!cache.dirty) continue
+    try {
+      const filePath = getFilePath(key)
+      fs.mkdirSync(path.dirname(filePath), { recursive: true })
+      fs.writeFileSync(filePath, JSON.stringify(cache.data, null, 2))
+      cache.dirty = false
+    } catch (err) {
+      logger.error(`[RollPig-Plugin] 数据保存失败：${key}`, err)
+    }
+  }
+}
+
 export function initStorage() {
-  ensureDataDirs()
-  loadData()
+  fs.mkdirSync(path.join(DATA_DIR, 'private'), { recursive: true })
   process.on('beforeExit', () => saveData())
 }
 
-export function getUserRecords(e) {
-  return e.group_id ? groupUserRecords : privateUserRecords
-}
+export { getUserRecords }
 
 export function recordDailyPig(e, userId, date, pigId) {
   const userRecords = getUserRecords(e)
@@ -74,7 +83,7 @@ export function recordDailyPig(e, userId, date, pigId) {
   record.date = date
   record.collected[pigId] = (record.collected[pigId] || 0) + 1
   userRecords[uid] = record
-  markDirty()
+  markDirty(e)
   return { claimed: true, count: record.collected[pigId] }
 }
 
@@ -85,11 +94,9 @@ export function getPigCollection(e, userId) {
 }
 
 export function getTodayPigId(e, userId, date) {
-  const uid = String(userId)
-  const record = (e.group_id ? groupUserRecords : privateUserRecords)[uid]
+  const userRecords = getUserRecords(e)
+  const record = userRecords[String(userId)]
   if (record?.date === date) return record.pig_id
-  const otherRecord = (e.group_id ? privateUserRecords : groupUserRecords)[uid]
-  if (otherRecord?.date === date) return otherRecord.pig_id
   return null
 }
 
@@ -104,7 +111,7 @@ export function recordBreed(e, userIds, breedPigId, breedKey) {
     rec.breedCount[breedKey] = (rec.breedCount[breedKey] || 0) + 1
     userRecords[key] = rec
   }
-  markDirty()
+  markDirty(e)
 }
 
 export function getBreedCount(e, userId, breedKey) {
