@@ -106,7 +106,9 @@ export function recordBreed(e, userIds, breedPigId, breedKey) {
     const key = String(uid)
     const rec = userRecords[key] || { collected: {} }
     if (!rec.collected) rec.collected = {}
-    rec.collected[breedPigId] = (rec.collected[breedPigId] || 0) + 1
+    if (breedPigId) {
+      rec.collected[breedPigId] = (rec.collected[breedPigId] || 0) + 1
+    }
     if (!rec.breedCount) rec.breedCount = {}
     rec.breedCount[breedKey] = (rec.breedCount[breedKey] || 0) + 1
     userRecords[key] = rec

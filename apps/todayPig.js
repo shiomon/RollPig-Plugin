@@ -316,23 +316,32 @@ export class TodayPig extends plugin {
         return true
       }
 
-      const myPigId = getTodayPigId(e, myId, date)
-      const targetPigId = getTodayPigId(e, targetId, date)
-
-      if (!myPigId) {
-        await e.reply("你今天还没有抽取猪猪哦~快发「今日猪猪」抽取后再配种吧！")
-        return true
-      }
-      if (!targetPigId) {
-        await e.reply("对方今天还没有抽取猪猪哦~让TA发「今日猪猪」抽取后再配种吧！")
-        return true
-      }
-
       const pigPool = getPigPool()
-      const myPig = pigPool.find(p => p.id === myPigId)
-      const targetPig = pigPool.find(p => p.id === targetPigId)
-      if (!myPig || !targetPig) {
-        await e.reply("小猪数据异常，请重新抽取今日猪猪~")
+
+      function resolvePig(userId) {
+        const todayPigId = getTodayPigId(e, userId, date)
+        if (todayPigId) {
+          const pig = pigPool.find(p => p.id === todayPigId)
+          if (pig) return pig
+        }
+        const record = userRecords[userId] || {}
+        const collectedIds = Object.keys(record.collected || {})
+        if (collectedIds.length > 0) {
+          const randomId = collectedIds[Math.floor(Math.random() * collectedIds.length)]
+          const pig = pigPool.find(p => p.id === randomId)
+          if (pig) return pig
+        }
+        return null
+      }
+
+      const myPig = resolvePig(myId)
+      if (!myPig) {
+        await e.reply("你还没有抽取猪猪哦~快发「今日猪猪」抽取后再配种吧！")
+        return true
+      }
+      const targetPig = resolvePig(targetId)
+      if (!targetPig) {
+        await e.reply("对方还没有抽取猪猪哦~让TA发「今日猪猪」抽取后再配种吧！")
         return true
       }
 
@@ -346,12 +355,16 @@ export class TodayPig extends plugin {
         return true
       }
 
-      const breedPig = pigPool[Math.floor(Math.random() * pigPool.length)]
-      recordBreed(e, [myId, targetId], breedPig.id, breedKey)
+      const success = score >= 40
+      let breedPig = null
+      if (success) {
+        breedPig = pigPool[Math.floor(Math.random() * pigPool.length)]
+      }
+      recordBreed(e, [myId, targetId], breedPig ? breedPig.id : null, breedKey)
 
       const myImage = findPigImage(myPig.id)
       const targetImage = findPigImage(targetPig.id)
-      const breedImage = findPigImage(breedPig.id)
+      const breedImage = breedPig ? findPigImage(breedPig.id) : null
 
       try {
         const html = generateBreedHTML({
@@ -361,10 +374,11 @@ export class TodayPig extends plugin {
           targetName: targetPig.name,
           score,
           desc,
+          success,
           breedImage: breedImage ? pathToFileURL(breedImage).href : "",
-          breedName: breedPig.name,
-          breedDescription: breedPig.description,
-          breedAnalysis: breedPig.analysis,
+          breedName: breedPig ? breedPig.name : "",
+          breedDescription: breedPig ? breedPig.description : "",
+          breedAnalysis: breedPig ? breedPig.analysis : "",
         })
         const img = await puppeteer.screenshot("rollpig-breed", {
           tplFile: RANK_TEMPLATE,
@@ -380,10 +394,14 @@ export class TodayPig extends plugin {
         if (myImage) msg.push(segment.image(pathToFileURL(myImage).href))
         msg.push(`【${myPig.name}】×`)
         if (targetImage) msg.push(segment.image(pathToFileURL(targetImage).href))
-        msg.push(`【${targetPig.name}】\n\n般配度：${score}/100\n${desc}\n\n`)
-        msg.push("配种诞生了新小猪！\n")
-        if (breedImage) msg.push(segment.image(pathToFileURL(breedImage).href))
-        msg.push(`\n【${breedPig.name}】\n${breedPig.description}\n\n${breedPig.analysis}\n\n双方图鉴已收录此小猪！`)
+        msg.push(`【${targetPig.name}】\n\n般配度：${score}%\n${desc}\n\n`)
+        if (success) {
+          msg.push("配种诞生了新小猪！\n")
+          if (breedImage) msg.push(segment.image(pathToFileURL(breedImage).href))
+          msg.push(`\n【${breedPig.name}】\n${breedPig.description}\n\n${breedPig.analysis}\n\n双方图鉴已收录此小猪！`)
+        } else {
+          msg.push("配种失败...般配度太低，没有诞生小猪。")
+        }
         await e.reply([...msg, getButtons()])
       }
       return true
