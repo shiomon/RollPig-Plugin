@@ -85,9 +85,11 @@ export function getPigCollection(e, userId) {
 }
 
 export function getTodayPigId(e, userId, date) {
-  const userRecords = getUserRecords(e)
-  const record = userRecords[String(userId)]
+  const uid = String(userId)
+  const record = (e.group_id ? groupUserRecords : privateUserRecords)[uid]
   if (record?.date === date) return record.pig_id
+  const otherRecord = (e.group_id ? privateUserRecords : groupUserRecords)[uid]
+  if (otherRecord?.date === date) return otherRecord.pig_id
   return null
 }
 
