@@ -126,7 +126,9 @@ export class TodayPig extends plugin {
 
       await e.reply("开始同步 PigHub 猪猪资源，请稍等...")
       const store = await ensurePigHubSynced()
-      await e.reply([`PigHub 同步完成：${store.count} 个猪猪\n现在可以使用「随机猪猪」和「找猪」了~`, getButtons()])
+      const failed = store._failed || 0
+      const failMsg = failed > 0 ? `\n${failed} 张下载失败已跳过` : ""
+      await e.reply([`PigHub 同步完成：${store.count} 个猪猪${failMsg}\n现在可以使用「随机猪猪」和「找猪」了~`, getButtons()])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] PigHub 同步失败：${error.message}`, error)

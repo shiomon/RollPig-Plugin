@@ -141,6 +141,19 @@ export function findPigHubImage(localFile, imageDir = PIGHUB_IMAGE_DIR) {
   return existsSync(file) ? file : null
 }
 
+async function fetchWithRetry(url, retries = 3, timeout = 30000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(timeout) })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return response
+    } catch (error) {
+      if (attempt === retries) throw error
+      await new Promise(r => setTimeout(r, 1000 * attempt))
+    }
+  }
+}
+
 async function buildPigHubRecord(image, index, previousById) {
   const id = Number(image.id)
   const title = String(image.title || "").trim()
@@ -171,9 +184,7 @@ async function buildPigHubRecord(image, index, previousById) {
     }
   }
 
-  const response = await fetch(url, { signal: AbortSignal.timeout(60000) })
-  if (!response.ok) throw new Error(`下载 PigHub 图片失败：${filename} ${response.status}`)
-
+  const response = await fetchWithRetry(url, 3, 30000)
   const contentType = response.headers.get("content-type") || "application/octet-stream"
   const buffer = Buffer.from(await response.arrayBuffer())
   if (!buffer.length) throw new Error(`下载 PigHub 图片为空：${filename}`)
@@ -193,35 +204,46 @@ export async function syncPigHubStore() {
     previousById = new Map(loadPigHubStore().images.map(image => [image.id, image]))
   } catch {}
 
-  const response = await fetch(PIGHUB_API_URL, { signal: AbortSignal.timeout(30000) })
-  if (!response.ok) throw new Error(`请求 PigHub 接口失败：${response.status}`)
-
+  const response = await fetchWithRetry(PIGHUB_API_URL, 3, 30000)
   const body = await response.json()
   const images = Array.isArray(body.data) ? body.data : []
   if (!images.length) throw new Error("PigHub 接口未返回图片数据")
 
   let next = 0
-  const records = new Array(images.length)
-  const workers = Array.from({ length: Math.min(SYNC_CONCURRENCY, images.length) }, async () => {
-    while (next < images.length) {
+  let done = 0
+  let failed = 0
+  const total = images.length
+  const records = new Array(total)
+  const workers = Array.from({ length: Math.min(SYNC_CONCURRENCY, total) }, async () => {
+    while (next < total) {
       const index = next++
-      records[index] = await buildPigHubRecord(images[index], index, previousById)
+      try {
+        records[index] = await buildPigHubRecord(images[index], index, previousById)
+      } catch (error) {
+        failed++
+        logger.warn(`[RollPig-Plugin] PigHub 跳过第 ${index + 1} 张：${error.message}`)
+      }
+      done++
+      if (done % 100 === 0) logger.info(`[RollPig-Plugin] PigHub 同步进度：${done}/${total}`)
     }
   })
   await Promise.all(workers)
 
+  const validRecords = records.filter(Boolean)
+  if (!validRecords.length) throw new Error("PigHub 所有图片下载失败")
+
   const store = {
     source: PIGHUB_API_URL,
     synced_at: new Date().toISOString(),
-    count: records.length,
-    images: records,
-    local_bytes: records.reduce((sum, image) => sum + image.size, 0),
+    count: validRecords.length,
+    images: validRecords,
+    local_bytes: validRecords.reduce((sum, image) => sum + image.size, 0),
   }
   const tempFile = `${PIGHUB_JSON_PATH}.tmp`
   await writeFile(tempFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
   await rename(tempFile, PIGHUB_JSON_PATH)
   cachedStore = loadPigHubStore()
-  return cachedStore
+  return { ...cachedStore, _failed: failed }
 }
 
 export function ensurePigHubSynced() {
