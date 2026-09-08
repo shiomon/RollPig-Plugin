@@ -37,6 +37,7 @@ import { PIG_DISHES } from "../model/dishes.js"
 import { getButtons, calcCompatibility, getMatchDesc } from "../utils/helper.js"
 
 import { generateRankHTML } from "../view/rank.js"
+import { generateBreedHTML } from "../view/breed.js"
 
 const PIG_GRID_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "pig-grid.html")
 
@@ -350,16 +351,39 @@ export class TodayPig extends plugin {
       const targetImage = findPigImage(targetPig.id)
       const breedImage = findPigImage(breedPig.id)
 
-      const msg = ["小猪配种结果\n"]
-      if (myImage) msg.push(segment.image(pathToFileURL(myImage).href))
-      msg.push(`【${myPig.name}】×`)
-      if (targetImage) msg.push(segment.image(pathToFileURL(targetImage).href))
-      msg.push(`【${targetPig.name}】\n\n般配度：${score}/100\n${desc}\n\n`)
-      msg.push("配种诞生了新小猪！\n")
-      if (breedImage) msg.push(segment.image(pathToFileURL(breedImage).href))
-      msg.push(`\n【${breedPig.name}】\n${breedPig.description}\n\n${breedPig.analysis}\n\n双方图鉴已收录此小猪！`)
-
-      await e.reply([...msg, getButtons()])
+      try {
+        const html = generateBreedHTML({
+          myImage: myImage ? pathToFileURL(myImage).href : "",
+          myName: myPig.name,
+          targetImage: targetImage ? pathToFileURL(targetImage).href : "",
+          targetName: targetPig.name,
+          score,
+          desc,
+          breedImage: breedImage ? pathToFileURL(breedImage).href : "",
+          breedName: breedPig.name,
+          breedDescription: breedPig.description,
+          breedAnalysis: breedPig.analysis,
+        })
+        const img = await puppeteer.screenshot("rollpig-breed", {
+          tplFile: RANK_TEMPLATE,
+          html,
+          imgType: "png",
+          saveId: randomUUID(),
+        })
+        if (!img) throw new Error("截图返回空")
+        await e.reply([img, getButtons()])
+      } catch (renderErr) {
+        logger.error("[RollPig-Plugin] 配种渲染失败:", renderErr)
+        const msg = ["小猪配种结果\n"]
+        if (myImage) msg.push(segment.image(pathToFileURL(myImage).href))
+        msg.push(`【${myPig.name}】×`)
+        if (targetImage) msg.push(segment.image(pathToFileURL(targetImage).href))
+        msg.push(`【${targetPig.name}】\n\n般配度：${score}/100\n${desc}\n\n`)
+        msg.push("配种诞生了新小猪！\n")
+        if (breedImage) msg.push(segment.image(pathToFileURL(breedImage).href))
+        msg.push(`\n【${breedPig.name}】\n${breedPig.description}\n\n${breedPig.analysis}\n\n双方图鉴已收录此小猪！`)
+        await e.reply([...msg, getButtons()])
+      }
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 小猪配种失败：${error.message}`, error)
