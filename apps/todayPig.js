@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { rm } from "node:fs/promises"
+
 import path from "node:path"
 import { pathToFileURL } from "node:url"
 
@@ -19,7 +19,7 @@ import {
   recordDailyPig,
   getPigCollection,
   getTodayPigId,
-  getUserRecord,
+
   recordBreed,
   getBreedCount,
   summarizePigCollection,
@@ -36,12 +36,12 @@ import {
 import { ensureAtlas } from "./generateAtlas.js"
 import { PIG_DISHES } from "../model/dishes.js"
 import { getButtons, calcCompatibility, getMatchDesc, normalizeCollected } from "../utils/helper.js"
-import { generateCollectionHTML } from "../view/collection.js"
+
 import { generateRankHTML } from "../view/rank.js"
 
 const PIG_GRID_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "pig-grid.html")
 const PIG_ATLAS_FILE = path.join(LOCAL_RESOURCE_DIR, "atlas.png")
-const COLLECTION_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "collection.html")
+
 const RANK_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "rank.html")
 const PIGPEN_RENDER_NAME = "rollpig-pigpen"
 
@@ -421,7 +421,16 @@ export class TodayPig extends plugin {
       const isTargetingOther = targetId !== myId
 
       const targetRecord = normalizeCollected(userRecords[targetId] || {})
-      const targetName = isTargetingOther ? "群友" : "你"
+      let targetName = "你"
+      if (isTargetingOther) {
+        try {
+          const member = e.bot?.pickMember?.(e.group_id, Number(targetId))
+          const info = await member?.getInfo?.()
+          targetName = info?.nickname || "群友"
+        } catch {
+          targetName = "群友"
+        }
+      }
 
       const pigPool = getPigPool()
       let pig = null

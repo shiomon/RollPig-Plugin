@@ -134,13 +134,14 @@ export function getBreedCount(e, userId, breedKey) {
 }
 
 export function summarizePigCollection(pigs, counts) {
-  const items = pigs.map((pig, index) => ({ ...pig, index: index + 1, count: counts[pig.id] || 0 }))
-  const owned = items.filter(pig => pig.count > 0)
-  const favorite = owned.reduce((best, pig) => (!best || pig.count > best.count ? pig : best), null)
+  const owned = pigs.filter(pig => (counts[pig.id] || 0) > 0)
+  const favorite = owned.reduce((best, pig) => {
+    const count = counts[pig.id] || 0
+    return (!best || count > best.count) ? { ...pig, count } : best
+  }, null)
   return {
-    items,
     ownedCount: owned.length,
-    totalCount: owned.reduce((sum, pig) => sum + pig.count, 0),
+    totalCount: owned.reduce((sum, pig) => sum + (counts[pig.id] || 0), 0),
     rate: ((owned.length / pigs.length) * 100).toFixed(2),
     favorite,
   }

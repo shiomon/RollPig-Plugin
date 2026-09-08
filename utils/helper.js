@@ -1,10 +1,3 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 export function getButtons() {
   return segment.button(
     [
@@ -35,15 +28,6 @@ export function getMatchDesc(score) {
   if (score >= 40) return '一般般吧，需要多磨合磨合。'
   if (score >= 20) return '配对度不高，两只小猪可能合不来。'
   return '完全不搭...这两只小猪还是各走各的路吧。'
-}
-
-export function findPigImage(imageDir, pigId) {
-  const extensions = ['.png', '.webp', '.jpg', '.jpeg', '.gif']
-  for (const ext of extensions) {
-    const file = path.join(imageDir, `${pigId}${ext}`)
-    if (fs.existsSync(file)) return file
-  }
-  return null
 }
 
 export function normalizeCollected(record) {
