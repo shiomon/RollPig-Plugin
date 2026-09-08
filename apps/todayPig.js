@@ -134,7 +134,9 @@ export class TodayPig extends plugin {
         const pig = pigPool.find(p => p.id === existingPigId)
         if (pig) {
           const cardFile = findPigCard(pig.id)
-          const msg = ["今天已经抽过了哦~\n"]
+          const collected = getPigCollection(e, userId)
+          const count = collected[existingPigId] || 1
+          const msg = [`🎉 第${count}次抽到这只猪猪~\n`]
           if (cardFile) msg.push(makeStickerImage(cardFile))
           else msg.push(`\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}`)
           msg.push(getButtons())
@@ -152,7 +154,8 @@ export class TodayPig extends plugin {
         logger.warn(`[RollPig-Plugin] 今日猪猪记录失败：已领取`)
       }
 
-      await e.reply([makeStickerImage(cardFile), getButtons()])
+      const prefix = result.count === 1 ? "🎉 抓到一只新猪猪啦~\n" : `🎉 第${result.count}次抽到这只猪猪~\n`
+      await e.reply([prefix, makeStickerImage(cardFile), getButtons()])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 今日猪猪生成失败：${error.message}`, error)
@@ -263,7 +266,7 @@ export class TodayPig extends plugin {
         tplFile: PIG_GRID_TEMPLATE,
         saveId,
         imgType: "png",
-        title: "我的猪圈",
+        title: "🐷 我的猪圈",
         owner: `${getUserName(e)}的猪圈`,
         showStats: true,
         renderScale: 2,
