@@ -7,7 +7,7 @@ export function getButtons() {
     ],
     [
       { text: "我的猪圈", input: "/我的猪圈" },
-      { text: "猪猪配种", input: "/猪猪配种" }
+      { text: "猪猪配种", input: "（删@我，然后@群友）/猪猪配种" }
     ]
   )
 }
