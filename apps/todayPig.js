@@ -89,13 +89,6 @@ function getMemberAvatar(e, userId) {
   }
 }
 
-function syncPigHubInBackground() {
-  if (isPigHubReady()) return
-  logger.info("[RollPig-Plugin] PigHub 资源缺失，开始后台同步")
-  ensurePigHubSynced()
-    .then(store => logger.info(`[RollPig-Plugin] PigHub 资源同步完成：${store.count} 个`))
-    .catch(error => logger.error(`[RollPig-Plugin] PigHub 资源同步失败：${error.message}`, error))
-}
 
 export class TodayPig extends plugin {
   constructor() {
@@ -113,14 +106,32 @@ export class TodayPig extends plugin {
         { reg: "^[#/]?(猪猪|小猪)配种$", fnc: "pigBreed" },
         { reg: "^[#/]?(猪猪|小猪)排行$", fnc: "pigRank" },
         { reg: "^[#/]?(猪猪|小猪)菜肴$", fnc: "pigCook" },
+        { reg: "^[#/]?(猪猪|小猪)同步$", fnc: "pigSync" },
       ],
     })
   }
 
   async init() {
     initStorage()
+  }
 
-    syncPigHubInBackground()
+  async pigSync(e) {
+    try {
+      if (isPigHubReady()) {
+        const store = getPigHubStore()
+        await e.reply([`PigHub 资源已就绪：${store.count} 个猪猪\n如需重新同步，请先删除 resources/pighub 目录`, getButtons()])
+        return true
+      }
+
+      await e.reply("开始同步 PigHub 猪猪资源，请稍等...")
+      const store = await ensurePigHubSynced()
+      await e.reply([`PigHub 同步完成：${store.count} 个猪猪\n现在可以使用「随机猪猪」和「找猪」了~`, getButtons()])
+      return true
+    } catch (error) {
+      logger.error(`[RollPig-Plugin] PigHub 同步失败：${error.message}`, error)
+      await e.reply("PigHub 同步失败了...")
+      return true
+    }
   }
 
   async todayPig(e) {
@@ -165,8 +176,7 @@ export class TodayPig extends plugin {
   async randomPig(e) {
     try {
       if (!isPigHubReady()) {
-        syncPigHubInBackground()
-        await e.reply("PigHub 猪猪资源正在同步，完成后再试")
+        await e.reply("PigHub 猪猪资源未同步\n请先发送「#猪猪同步」下载资源")
         return true
       }
 
@@ -208,8 +218,7 @@ export class TodayPig extends plugin {
   async findPig(e) {
     try {
       if (!isPigHubReady()) {
-        syncPigHubInBackground()
-        await e.reply("PigHub 猪猪资源正在同步，完成后再试")
+        await e.reply("PigHub 猪猪资源未同步\n请先发送「#猪猪同步」下载资源")
         return true
       }
 
