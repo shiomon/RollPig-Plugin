@@ -7,12 +7,12 @@ TRSS-Yunzai 猪猪插件兼容QQBot，提供每日猪猪、PigHub 随机猪猪�
 cd Yunzai
 方式一：
 ```bash
-git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
+git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/RollPig-Plugin
 ```
 
 方式二：国内环境
 ```bash
-git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
+git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/RollPig-Plugin
 ```
 
 安装后重启 Yunzai 即可，首次启动自动同步 PigHub 图片资源到本地。
