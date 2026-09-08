@@ -134,9 +134,7 @@ export class TodayPig extends plugin {
         const pig = pigPool.find(p => p.id === existingPigId)
         if (pig) {
           const cardFile = findPigCard(pig.id)
-          const collected = getPigCollection(e, userId)
-          const count = collected[existingPigId] || 1
-          const msg = [`🎉 第${count}次抽到这只猪猪~\n`]
+          const msg = ["今天已经抽过了~\n"]
           if (cardFile) msg.push(makeStickerImage(cardFile))
           else msg.push(`\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}`)
           msg.push(getButtons())
