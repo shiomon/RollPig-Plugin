@@ -1,7 +1,7 @@
 export function generateRankHTML(top, total) {
   const rows = top.map((u, i) => {
     const percent = (u.count / total * 100).toFixed(1)
-    const medal = i === 0 ? '1' : i === 1 ? '2' : i === 2 ? '3' : `${i + 1}`
+    const medal = `${i + 1}`
     const medalClass = i < 3 ? `rank rank-${i + 1}` : 'rank'
     const cls = u.isCurrent ? 'row current' : 'row'
     const barWidth = Math.min(percent, 100)

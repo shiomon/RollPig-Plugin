@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { normalizeCollected } from '../utils/helper.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -10,21 +9,24 @@ const DATA_DIR = path.join(__dirname, '..', 'data')
 const GROUP_USERS_PATH = path.join(DATA_DIR, 'group', 'users.json')
 const PRIVATE_USERS_PATH = path.join(DATA_DIR, 'private', 'users.json')
 
-
 let groupUserRecords = {}
 let privateUserRecords = {}
 let dirty = false
 let _saveTimer = null
 
 function loadUsersFile(filePath) {
-  if (fs.existsSync(filePath)) {
-    const records = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-    for (const userId of Object.keys(records)) {
-      normalizeCollected(records[userId])
-    }
-    return records
+  if (!fs.existsSync(filePath)) return {}
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+  } catch (err) {
+    logger.error(`[RollPig-Plugin] 数据文件解析失败：${filePath}`, err)
+    return {}
   }
-  return {}
+}
+
+function ensureDataDirs() {
+  fs.mkdirSync(path.join(DATA_DIR, 'group'), { recursive: true })
+  fs.mkdirSync(path.join(DATA_DIR, 'private'), { recursive: true })
 }
 
 function loadData() {
@@ -35,11 +37,6 @@ function loadData() {
 function saveData() {
   if (!dirty) return
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
-    const groupDir = path.join(DATA_DIR, 'group')
-    const privateDir = path.join(DATA_DIR, 'private')
-    if (!fs.existsSync(groupDir)) fs.mkdirSync(groupDir, { recursive: true })
-    if (!fs.existsSync(privateDir)) fs.mkdirSync(privateDir, { recursive: true })
     fs.writeFileSync(GROUP_USERS_PATH, JSON.stringify(groupUserRecords, null, 2))
     fs.writeFileSync(PRIVATE_USERS_PATH, JSON.stringify(privateUserRecords, null, 2))
     dirty = false
@@ -56,6 +53,7 @@ function markDirty() {
 }
 
 export function initStorage() {
+  ensureDataDirs()
   loadData()
   process.on('beforeExit', () => saveData())
 }
@@ -67,7 +65,7 @@ export function getUserRecords(e) {
 export function recordDailyPig(e, userId, date, pigId) {
   const userRecords = getUserRecords(e)
   const uid = String(userId)
-  const record = normalizeCollected(userRecords[uid] || {})
+  const record = userRecords[uid] || { collected: {} }
   if (record.date === date) {
     return { claimed: false, pig_id: record.pig_id, count: record.collected[pigId] || 0 }
   }
@@ -81,8 +79,8 @@ export function recordDailyPig(e, userId, date, pigId) {
 
 export function getPigCollection(e, userId) {
   const userRecords = getUserRecords(e)
-  const record = normalizeCollected(userRecords[String(userId)] || {})
-  return record.collected
+  const record = userRecords[String(userId)]
+  return record?.collected || {}
 }
 
 export function getTodayPigId(e, userId, date) {
@@ -92,12 +90,11 @@ export function getTodayPigId(e, userId, date) {
   return null
 }
 
-
 export function recordBreed(e, userIds, breedPigId, breedKey) {
   const userRecords = getUserRecords(e)
   for (const uid of userIds) {
     const key = String(uid)
-    const rec = normalizeCollected(userRecords[key] || {})
+    const rec = userRecords[key] || { collected: {} }
     rec.collected[breedPigId] = (rec.collected[breedPigId] || 0) + 1
     if (!rec.breedCount) rec.breedCount = {}
     rec.breedCount[breedKey] = (rec.breedCount[breedKey] || 0) + 1
@@ -108,7 +105,7 @@ export function recordBreed(e, userIds, breedPigId, breedKey) {
 
 export function getBreedCount(e, userId, breedKey) {
   const userRecords = getUserRecords(e)
-  return parseInt(userRecords[String(userId)]?.breedCount?.[breedKey] || 0)
+  return userRecords[String(userId)]?.breedCount?.[breedKey] || 0
 }
 
 export function summarizePigCollection(pigs, counts) {

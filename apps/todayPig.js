@@ -35,7 +35,7 @@ import {
 } from "../model/todayPig.js"
 
 import { PIG_DISHES } from "../model/dishes.js"
-import { getButtons, calcCompatibility, getMatchDesc, normalizeCollected } from "../utils/helper.js"
+import { getButtons, calcCompatibility, getMatchDesc } from "../utils/helper.js"
 
 import { generateRankHTML } from "../view/rank.js"
 
@@ -129,7 +129,7 @@ export class TodayPig extends plugin {
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 今日猪猪生成失败：${error.message}`, error)
-      await e.reply(`今日猪猪生成失败：${error.message}`)
+      await e.reply("今日猪猪生成失败了...")
       return true
     }
   }
@@ -172,7 +172,7 @@ export class TodayPig extends plugin {
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 随机猪猪失败：${error.message}`, error)
-      await e.reply(`随机猪猪失败：${error.message}`)
+      await e.reply("随机猪猪失败了...")
       return true
     }
   }
@@ -217,8 +217,8 @@ export class TodayPig extends plugin {
       await e.reply("找猪失败了...")
       return true
     }
-  }
 
+  }
 
   async myPigpen(e) {
     try {
@@ -253,7 +253,7 @@ export class TodayPig extends plugin {
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 我的猪圈失败：${error.message}`, error)
-      await e.reply(`我的猪圈失败：${error.message}`)
+      await e.reply("我的猪圈渲染失败了...")
       return true
     }
   }
@@ -407,7 +407,8 @@ export class TodayPig extends plugin {
       let targetId = e.at ? e.at.toString() : myId
       const isTargetingOther = targetId !== myId
 
-      const targetRecord = normalizeCollected(userRecords[targetId] || {})
+      const targetRecord = userRecords[targetId] || {}
+      const targetCollected = targetRecord.collected || {}
       let targetName = "你"
       if (isTargetingOther) {
         try {
@@ -429,7 +430,7 @@ export class TodayPig extends plugin {
       }
 
       if (!pig) {
-        const collectedIds = Object.keys(targetRecord.collected)
+        const collectedIds = Object.keys(targetCollected)
         if (collectedIds.length > 0) {
           const randomId = collectedIds[Math.floor(Math.random() * collectedIds.length)]
           pig = pigPool.find(p => p.id === randomId)

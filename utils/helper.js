@@ -30,13 +30,3 @@ export function getMatchDesc(score) {
   return '完全不搭...这两只小猪还是各走各的路吧。'
 }
 
-export function normalizeCollected(record) {
-  if (Array.isArray(record.collected)) {
-    const obj = {}
-    for (const id of record.collected) obj[id] = 1
-    record.collected = obj
-  } else if (!record.collected || typeof record.collected !== 'object') {
-    record.collected = {}
-  }
-  return record
-}
