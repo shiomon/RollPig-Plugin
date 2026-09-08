@@ -63,7 +63,7 @@ function getUserName(event) {
 
 async function getMemberName(e, userId) {
   try {
-    const member = e.bot?.pickMember?.(e.group_id, Number(userId))
+    const member = e.bot?.pickMember?.(e.group_id, userId)
     if (!member) return null
     if (member.card) return member.card
     if (member.nickname) return member.nickname
@@ -79,7 +79,7 @@ async function getMemberName(e, userId) {
 
 function getMemberAvatar(e, userId) {
   try {
-    const member = e.bot?.pickMember?.(e.group_id, Number(userId))
+    const member = e.bot?.pickMember?.(e.group_id, userId)
     if (!member) return null
     if (typeof member.getAvatarUrl === "function") return member.getAvatarUrl()
     if (member.avatar) return member.avatar
