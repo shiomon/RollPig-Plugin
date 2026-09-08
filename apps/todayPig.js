@@ -61,6 +61,19 @@ function getUserName(event) {
   )
 }
 
+async function getMemberName(e, userId) {
+  try {
+    const member = e.bot?.pickMember?.(e.group_id, Number(userId))
+    if (!member) return null
+    if (member.card) return member.card
+    if (member.nickname) return member.nickname
+    const info = await member.getInfo?.()
+    return info?.nickname || info?.card || info?.user_name || null
+  } catch {
+    return null
+  }
+}
+
 function syncPigHubInBackground() {
   if (isPigHubReady()) return
   logger.info("[RollPig-Plugin] PigHub 资源缺失，开始后台同步")
@@ -353,13 +366,12 @@ export class TodayPig extends plugin {
       const top = userCounts.slice(0, 50)
 
       await Promise.all(top.map(u => (async () => {
-        let userName = "未知用户"
+        let userName = await getMemberName(e, u.userId) || `用户${u.userId.slice(-4)}`
         let userAvatar = ""
         try {
           const member = e.bot?.pickMember?.(e.group_id, Number(u.userId))
           if (member) {
             const info = await member.getInfo?.()
-            if (info?.nickname) userName = info.nickname
             if (info?.avatar) userAvatar = info.avatar
           }
         } catch (_) {}
@@ -410,13 +422,7 @@ export class TodayPig extends plugin {
       const targetCollected = targetRecord.collected || {}
       let targetName = "你"
       if (isTargetingOther) {
-        try {
-          const member = e.bot?.pickMember?.(e.group_id, Number(targetId))
-          const info = await member?.getInfo?.()
-          targetName = info?.nickname || "群友"
-        } catch {
-          targetName = "群友"
-        }
+        targetName = await getMemberName(e, targetId) || "群友"
       }
 
       const pigPool = getPigPool()

@@ -80,12 +80,34 @@
         object-fit: contain;
       }
 
-      .lock {
-        height: 58px;
-        font-size: 32px;
-        line-height: 58px;
-        filter: grayscale(1);
-        opacity: 0.6;
+      .lock-icon {
+        width: 22px;
+        height: 18px;
+        margin: 17px auto 0;
+        border: 3px solid #9aa8b8;
+        border-radius: 4px;
+        position: relative;
+        opacity: 0.5;
+      }
+      .lock-icon::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 8px;
+        border: 3px solid #9aa8b8;
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+      }
+      .stat-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
       }
 
       .name {
@@ -133,8 +155,8 @@
         </div>
         {{if showStats}}
         <div class="stats">
-          <div>📦 已收集：{{ownedCount}} / {{total}}</div>
-          <div>⭐ 收集率：{{rate}}%　🐷 共遇见：{{totalCount}} 次</div>
+          <div><span class="stat-dot" style="background:#3b82f6"></span>已收集：{{ownedCount}} / {{total}}</div>
+          <div><span class="stat-dot" style="background:#e26c82"></span>收集率：{{rate}}%　共遇见：{{totalCount}} 次</div>
           {{if favorite}}
           <div class="favorite">本命猪：{{favorite.name}}（{{favorite.count}} 次）</div>
           {{/if}}
@@ -151,7 +173,7 @@
           {{if pig.count > 0}}<span class="count">×{{pig.count}}</span>{{/if}}
           <div class="name">{{pig.name}}</div>
           {{else}}
-          <div class="lock">🔒</div>
+          <div class="lock-icon"></div>
           <div class="name">未解锁</div>
           {{/if}}
         </div>
