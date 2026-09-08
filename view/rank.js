@@ -1,16 +1,17 @@
 export function generateRankHTML(top, total) {
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   const rows = top.map((u, i) => {
     const percent = (u.count / total * 100).toFixed(1)
-    const medal = `${i + 1}`
     const medalClass = i < 3 ? `rank rank-${i + 1}` : 'rank'
     const cls = u.isCurrent ? 'row current' : 'row'
     const barWidth = Math.min(percent, 100)
-    const initial = (u.userName || '?').charAt(0)
+    const name = esc(u.userName || '?')
+    const initial = name.charAt(0)
     return `<div class="${cls}">
-      <div class="${medalClass}">${medal}</div>
-      <div class="avatar"><img src="${u.userAvatar}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="avatar-fallback">${initial}</span></div>
+      <div class="${medalClass}">${i + 1}</div>
+      <div class="avatar"><img src="${esc(u.userAvatar)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="avatar-fallback">${initial}</span></div>
       <div class="info">
-        <div class="name">${u.userName}${u.isCurrent ? ' <span class="tag">你</span>' : ''}</div>
+        <div class="name">${name}${u.isCurrent ? ' <span class="tag">你</span>' : ''}</div>
         <div class="bar"><div class="bar-fill" style="width:${barWidth}%"></div></div>
       </div>
       <div class="count">${u.count}/${total}</div>

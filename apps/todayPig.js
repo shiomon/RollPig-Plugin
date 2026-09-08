@@ -19,7 +19,6 @@ import {
   recordDailyPig,
   getPigCollection,
   getTodayPigId,
-
   recordBreed,
   getBreedCount,
   summarizePigCollection,
@@ -353,7 +352,7 @@ export class TodayPig extends plugin {
 
       const top = userCounts.slice(0, 50)
 
-      for (const u of top) {
+      await Promise.all(top.map(u => (async () => {
         let userName = "未知用户"
         let userAvatar = ""
         try {
@@ -368,7 +367,7 @@ export class TodayPig extends plugin {
         u.userName = userName
         u.userAvatar = userAvatar
         u.isCurrent = String(u.userId) === String(e.user_id)
-      }
+      })()))
 
       try {
         const html = generateRankHTML(top, total)

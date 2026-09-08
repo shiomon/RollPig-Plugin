@@ -66,6 +66,7 @@ export function recordDailyPig(e, userId, date, pigId) {
   const userRecords = getUserRecords(e)
   const uid = String(userId)
   const record = userRecords[uid] || { collected: {} }
+  if (!record.collected) record.collected = {}
   if (record.date === date) {
     return { claimed: false, pig_id: record.pig_id, count: record.collected[pigId] || 0 }
   }
@@ -95,6 +96,7 @@ export function recordBreed(e, userIds, breedPigId, breedKey) {
   for (const uid of userIds) {
     const key = String(uid)
     const rec = userRecords[key] || { collected: {} }
+    if (!rec.collected) rec.collected = {}
     rec.collected[breedPigId] = (rec.collected[breedPigId] || 0) + 1
     if (!rec.breedCount) rec.breedCount = {}
     rec.breedCount[breedKey] = (rec.breedCount[breedKey] || 0) + 1
