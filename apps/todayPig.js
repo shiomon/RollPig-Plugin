@@ -83,9 +83,9 @@ export class TodayPig extends plugin {
         { reg: "^[#/]?(找猪|搜猪)\\s+(.+)$", fnc: "findPig" },
 
         { reg: "^[#/]?我的猪圈$", fnc: "myPigpen" },
-        { reg: "^[#/]?小猪配种$", fnc: "pigBreed" },
-        { reg: "^[#/]?小猪排行$", fnc: "pigRank" },
-        { reg: "^[#/]?小猪菜肴$", fnc: "pigCook" },
+        { reg: "^[#/]?(猪猪|小猪)配种$", fnc: "pigBreed" },
+        { reg: "^[#/]?(猪猪|小猪)排行$", fnc: "pigRank" },
+        { reg: "^[#/]?(猪猪|小猪)菜肴$", fnc: "pigCook" },
       ],
     })
   }
