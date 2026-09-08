@@ -4,12 +4,14 @@ TRSS-Yunzai 猪猪插件，提供每日猪猪、PigHub 随机猪猪、配种、�
 
 ## 安装
 
-```bash
 cd Yunzai
 # 方式一：
+```bash
 git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
+```
 
 # 方式二：国内环境
+```bash
 git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/rollpig-plugin
 ```
 
