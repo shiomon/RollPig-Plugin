@@ -33,14 +33,13 @@ import {
   getShanghaiDate,
   selectTodayPig,
 } from "../model/todayPig.js"
-import { ensureAtlas } from "./generateAtlas.js"
+
 import { PIG_DISHES } from "../model/dishes.js"
 import { getButtons, calcCompatibility, getMatchDesc, normalizeCollected } from "../utils/helper.js"
 
 import { generateRankHTML } from "../view/rank.js"
 
 const PIG_GRID_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "pig-grid.html")
-const PIG_ATLAS_FILE = path.join(LOCAL_RESOURCE_DIR, "atlas.png")
 
 const RANK_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "rank.html")
 const PIGPEN_RENDER_NAME = "rollpig-pigpen"
@@ -82,7 +81,7 @@ export class TodayPig extends plugin {
         { reg: "^[#/]?(今日猪猪|今日小猪|每日猪猪)$", fnc: "todayPig" },
         { reg: "^[#/]?(随机猪猪|随机小猪)\\s*(\\d+)?$", fnc: "randomPig" },
         { reg: "^[#/]?(找猪|搜猪)\\s+(.+)$", fnc: "findPig" },
-        { reg: "^[#/]?(猪猪图鉴|小猪图鉴)$", fnc: "pigAtlas" },
+
         { reg: "^[#/]?我的猪圈$", fnc: "myPigpen" },
         { reg: "^[#/]?小猪配种$", fnc: "pigBreed" },
         { reg: "^[#/]?小猪排行$", fnc: "pigRank" },
@@ -93,9 +92,7 @@ export class TodayPig extends plugin {
 
   async init() {
     initStorage()
-    await ensureAtlas()
-      .then(file => logger.info(`[RollPig-Plugin] 静态猪猪图鉴已就绪：${file}`))
-      .catch(error => logger.error(`[RollPig-Plugin] 静态猪猪图鉴生成失败：${error.message}`, error))
+
     syncPigHubInBackground()
   }
 
@@ -222,16 +219,6 @@ export class TodayPig extends plugin {
     }
   }
 
-  async pigAtlas(e) {
-    try {
-      await e.reply([segment.image(pathToFileURL(PIG_ATLAS_FILE).href), getButtons()])
-      return true
-    } catch (error) {
-      logger.error(`[RollPig-Plugin] 猪猪图鉴发送失败：${error.message}`, error)
-      await e.reply(`猪猪图鉴发送失败：${error.message}`)
-      return true
-    }
-  }
 
   async myPigpen(e) {
     try {

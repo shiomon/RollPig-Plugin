@@ -6,7 +6,7 @@ export function getButtons() {
       { text: "小猪排行", callback: "/小猪排行" }
     ],
     [
-      { text: "猪猪图鉴", callback: "/猪猪图鉴" },
+      { text: "我的猪圈", callback: "/我的猪圈" },
       { text: "小猪配种", callback: "/小猪配种" }
     ]
   )
