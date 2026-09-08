@@ -1,5 +1,25 @@
 # RollPig-Plugin
 
+## 更新日志
+
+### 2026-09-08
+
+- 合并 `#猪猪图鉴` 到 `#我的猪圈`，删除预生成 `atlas.png` 和 `generateAtlas.js`
+- 指令支持 `猪猪`/`小猪` 双名词前缀（如 `#猪猪配种`/`#小猪配种` 均可）
+- 按钮文字统一 `猪猪` 前缀，排列：今日猪猪/猪猪菜肴/猪猪排行 + 我的猪圈/猪猪配种
+- `pigCook` 获取真实昵称而非硬编码"群友"
+- `pigRank` 成员信息获取改为并行 `Promise.all`
+- `rank.js` 用户名/头像 URL 加 HTML 转义防注入
+- `pigCollection.js` 防御性初始化 `record.collected`
+- 删除死代码：`view/collection.js`、`collection.html`、`normalizeCollected`、旧数据迁移
+- Redis 改为本地 JSON + debounce 1 秒落盘
+- 新增 `#小猪菜肴` 指令（30 道菜 + 猪猪点评）
+- 新增 `#小猪排行` 指令（Top50 头像+进度条）
+- 新增 `#小猪配种` 指令（般配度+双方共享图鉴+每日1次）
+- 新增 `#找猪`/`#搜猪` 指令（PigHub 搜索）
+
+---
+
 TRSS-Yunzai 猪猪插件，提供每日猪猪、PigHub 随机猪猪、配种、排行、菜肴等功能。
 
 ## 使用
