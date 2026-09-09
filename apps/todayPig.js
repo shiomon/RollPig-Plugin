@@ -94,8 +94,8 @@ function getMemberAvatar(e, userId) {
 export class TodayPig extends plugin {
   constructor() {
     super({
-      name: "今日猪猪",
-      dsc: "抽取每天属于自己的猪猪",
+      name: "今日小猪",
+      dsc: "抽取每天属于自己的小猪",
       event: "message",
       priority: 5000,
       rule: [
@@ -106,7 +106,7 @@ export class TodayPig extends plugin {
         { reg: "^[#/]?我的猪圈$", fnc: "myPigpen" },
         { reg: "^[#/]?(猪猪|小猪)配种$", fnc: "pigBreed" },
         { reg: "^[#/]?(猪猪|小猪)排行$", fnc: "pigRank" },
-        { reg: "^[#/]?(猪猪|小猪)菜肴$", fnc: "pigCook" },
+        { reg: "^[#/]?(猪猪|小猪)(做菜|菜肴)$", fnc: "pigCook" },
         { reg: "^[#/]?(猪猪|小猪)同步$", fnc: "pigSync" },
       ],
     })
@@ -120,15 +120,15 @@ export class TodayPig extends plugin {
     try {
       if (isPigHubReady()) {
         const store = getPigHubStore()
-        await e.reply([`PigHub 资源已就绪：${store.count} 个猪猪\n如需重新同步，请先删除 resources/pighub 目录`, getButtons()])
+        await e.reply([`PigHub 资源已就绪：${store.count} 个小猪\n如需重新同步，请先删除 resources/pighub 目录`, getButtons()])
         return true
       }
 
-      await e.reply("开始同步 PigHub 猪猪资源，请稍等...")
+      await e.reply("开始同步 PigHub 小猪资源，请稍等...")
       const store = await ensurePigHubSynced()
       const failed = store._failed || 0
       const failMsg = failed > 0 ? `\n${failed} 张下载失败已跳过` : ""
-      await e.reply([`PigHub 同步完成：${store.count} 个猪猪${failMsg}\n现在可以使用「随机猪猪」和「找猪」了~`, getButtons()])
+      await e.reply([`PigHub 同步完成：${store.count} 个小猪${failMsg}\n现在可以使用「随机小猪」和「找猪」了~`, getButtons()])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] PigHub 同步失败：${error.message}`, error)
@@ -147,31 +147,24 @@ export class TodayPig extends plugin {
       if (existingPigId) {
         const pig = pigPool.find(p => p.id === existingPigId)
         if (pig) {
-          const cardFile = findPigCard(pig.id)
-          const msg = ["今天已经抽过了~\n"]
-          if (cardFile) msg.push(makeStickerImage(cardFile))
-          else msg.push(`\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}`)
-          msg.push(getButtons())
-          await e.reply(msg)
+          await e.reply([`今天已经抽过了~\n\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons()])
           return true
         }
       }
 
       const pig = selectTodayPig(userId, date, pigPool)
-      const cardFile = findPigCard(pig.id)
-      if (!cardFile) throw new Error(`猪猪成品图缺失：${pig.id}`)
 
       const result = recordDailyPig(e, userId, date, pig.id)
       if (!result.claimed) {
-        logger.warn(`[RollPig-Plugin] 今日猪猪记录失败：已领取`)
+        logger.warn(`[RollPig-Plugin] 今日小猪记录失败：已领取`)
       }
 
-      const prefix = result.count === 1 ? "🎉 抓到一只新猪猪啦~\n" : `🎉 第${result.count}次抽到这只猪猪~\n`
-      await e.reply([prefix, makeStickerImage(cardFile), getButtons()])
+      const prefix = result.count === 1 ? "🎉 抓到一只新小猪啦~\n" : `🎉 第${result.count}次抽到这只小猪~\n`
+      await e.reply([prefix, `\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons()])
       return true
     } catch (error) {
-      logger.error(`[RollPig-Plugin] 今日猪猪生成失败：${error.message}`, error)
-      await e.reply("今日猪猪生成失败了...")
+      logger.error(`[RollPig-Plugin] 今日小猪生成失败：${error.message}`, error)
+      await e.reply("今日小猪生成失败了...")
       return true
     }
   }
@@ -179,7 +172,7 @@ export class TodayPig extends plugin {
   async randomPig(e) {
     try {
       if (!isPigHubReady()) {
-        await e.reply("PigHub 猪猪资源未同步\n请先发送「#猪猪同步」下载资源")
+        await e.reply("PigHub 小猪资源未同步\n请先发送「#小猪同步」下载资源")
         return true
       }
 
@@ -212,8 +205,8 @@ export class TodayPig extends plugin {
       }
       return true
     } catch (error) {
-      logger.error(`[RollPig-Plugin] 随机猪猪失败：${error.message}`, error)
-      await e.reply("随机猪猪失败了...")
+      logger.error(`[RollPig-Plugin] 随机小猪失败：${error.message}`, error)
+      await e.reply("随机小猪失败了...")
       return true
     }
   }
@@ -221,7 +214,7 @@ export class TodayPig extends plugin {
   async findPig(e) {
     try {
       if (!isPigHubReady()) {
-        await e.reply("PigHub 猪猪资源未同步\n请先发送「#猪猪同步」下载资源")
+        await e.reply("PigHub 小猪资源未同步\n请先发送「#小猪同步」下载资源")
         return true
       }
 
@@ -336,12 +329,12 @@ export class TodayPig extends plugin {
 
       const myPig = resolvePig(myId)
       if (!myPig) {
-        await e.reply("你还没有抽取猪猪哦~快发「今日猪猪」抽取后再配种吧！")
+        await e.reply("你还没有抽取小猪哦~快发「今日小猪」抽取后再配种吧！")
         return true
       }
       const targetPig = resolvePig(targetId)
       if (!targetPig) {
-        await e.reply("对方还没有抽取猪猪哦~让TA发「今日猪猪」抽取后再配种吧！")
+        await e.reply("对方还没有抽取小猪哦~让TA发「今日小猪」抽取后再配种吧！")
         return true
       }
 
@@ -422,7 +415,7 @@ export class TodayPig extends plugin {
       const userRecords = getUserRecords(e)
       const userIds = Object.keys(userRecords)
       if (userIds.length === 0) {
-        await e.reply("还没有排行数据哦~快发「今日猪猪」开始收集吧！")
+        await e.reply("还没有排行数据哦~快发「今日小猪」开始收集吧！")
         return true
       }
 
@@ -492,7 +485,7 @@ export class TodayPig extends plugin {
 
       if (targetRecord.date === date) {
         pig = pigPool.find(p => p.id === targetRecord.pig_id)
-        source = "今日猪猪"
+        source = "今日小猪"
       }
 
       if (!pig) {
@@ -506,9 +499,9 @@ export class TodayPig extends plugin {
 
       if (!pig) {
         if (isTargetingOther) {
-          await e.reply("对方还没有今日猪猪，图鉴也是空的~\n请让TA发「今日猪猪」后再使用「小猪菜肴」做成菜肴")
+          await e.reply("对方还没有今日小猪，图鉴也是空的~\n请让TA发「今日小猪」后再使用「小猪菜肴」做成菜肴")
         } else {
-          await e.reply("你还没有今日猪猪，图鉴也是空的~\n请先发「今日猪猪」后再使用「小猪菜肴」做成菜肴")
+          await e.reply("你还没有今日小猪，图鉴也是空的~\n请先发「今日小猪」后再使用「小猪菜肴」做成菜肴")
         }
         return true
       }
@@ -520,10 +513,10 @@ export class TodayPig extends plugin {
       if (imagePath) msg.push(segment.image(pathToFileURL(imagePath).href))
 
       let text = `\n小猪菜肴\n\n`
-      if (source === "今日猪猪") {
+      if (source === "今日小猪") {
         text += `用${targetName}的今日小猪【${pig.name}】做成【${dish.name}】！\n`
       } else {
-        text += `${targetName}今天没有「今日猪猪」，从小猪图鉴获取【${pig.name}】做成【${dish.name}】！\n`
+        text += `${targetName}今天没有「今日小猪」，从小猪图鉴获取【${pig.name}】做成【${dish.name}】！\n`
       }
       text += `\n${dish.desc}\n${pig.description}\n\n真香！\n\n评语：${dish.review}`
       msg.push(text)

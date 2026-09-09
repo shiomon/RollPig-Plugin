@@ -53,7 +53,7 @@ export function generateRankHTML(top, total) {
     <div class="subtitle">共 ${top.length} 位用户 | 总数 ${total} 只小猪</div>
   </div>
   ${rows}
-  <div class="footer">发送「今日猪猪」收集更多小猪~</div>
+  <div class="footer">发送「今日小猪」收集更多小猪~</div>
 </body>
 </html>`
 }
