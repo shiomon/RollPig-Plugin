@@ -147,7 +147,11 @@ export class TodayPig extends plugin {
       if (existingPigId) {
         const pig = pigPool.find(p => p.id === existingPigId)
         if (pig) {
-          await e.reply([`今天已经抽过了~\n\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons()])
+          const imagePath = findPigImage(pig.id)
+          const msg = ["今天已经抽过了~\n"]
+          if (imagePath) msg.push(segment.image(pathToFileURL(imagePath).href))
+          msg.push(`\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons())
+          await e.reply(msg)
           return true
         }
       }
@@ -160,7 +164,11 @@ export class TodayPig extends plugin {
       }
 
       const prefix = result.count === 1 ? "🎉 抓到一只新小猪啦~\n" : `🎉 第${result.count}次抽到这只小猪~\n`
-      await e.reply([prefix, `\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons()])
+      const imagePath = findPigImage(pig.id)
+      const msg = [prefix]
+      if (imagePath) msg.push(segment.image(pathToFileURL(imagePath).href))
+      msg.push(`\n【${pig.name}】\n${pig.description}\n\n${pig.analysis}\n`, getButtons())
+      await e.reply(msg)
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 今日小猪生成失败：${error.message}`, error)
