@@ -1,10 +1,10 @@
-# RollPig-Plugin
+# 🐷 RollPig-Plugin
 
 TRSS-Yunzai 小猪插件，兼容 QQBot / icqq 等适配器。提供每日小猪、PigHub 随机小猪、配种、排行、菜肴等功能。
 
 原项目：[QingYingX-Bot/RollPig-Plugin](https://github.com/QingYingX-Bot/RollPig-Plugin)
 
-## 安装
+## 📦 安装
 
 ```bash
 cd Yunzai
@@ -20,7 +20,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 
 安装后重启 Yunzai，发送 `#小猪同步` 下载 PigHub 图片资源。
 
-## 指令
+## 📋 指令
 
 所有指令支持 `#` 或 `/` 前缀，"猪猪"和"小猪"均可触发。
 
@@ -35,7 +35,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 | `#小猪菜肴` [@群友] | 用今日小猪做随机菜肴（30道菜），附小猪点评 |
 | `#小猪同步` | 手动同步 PigHub 图片资源到本地 |
 
-## 按钮
+## 🔘 按钮
 
 每条回复底部附带 5 个按钮（分 2 行），点击填入输入框后发送：
 
@@ -46,7 +46,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 
 按钮在 icqq 等非 QQBot 适配器下自动忽略，不影响功能。
 
-## 特点
+## ✨ 特点
 
 - 102 种本地小猪资源，sha256 哈希选猪稳定可复现
 - PigHub 图片手动同步（`#小猪同步`），6 路并发容错下载，离线可用
@@ -60,7 +60,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 - 零新增依赖，仅用 Node.js 内置模块和 Yunzai 内置库
 - Google Fonts 加载 `Noto Color Emoji` 显示 emoji
 
-## 项目结构
+## 📂 项目结构
 
 ```
 RollPig-Plugin/
@@ -79,7 +79,7 @@ RollPig-Plugin/
     └── pighub/             # PigHub缓存（gitignore，需手动同步）
 ```
 
-## 资源
+## 🖼️ 资源
 
 | 目录 | 说明 |
 | --- | --- |
@@ -90,7 +90,7 @@ RollPig-Plugin/
 | `resources/local/rank.html` | 排行渲染模板 |
 | `resources/pighub/` | PigHub 缓存（`.gitignore`，`#小猪同步` 下载） |
 
-## 数据存储
+## 💾 数据存储
 
 纯本地 JSON 文件，不使用 Redis：
 
@@ -99,11 +99,11 @@ RollPig-Plugin/
 
 内存缓冲 + debounce 1 秒落盘 + beforeExit 兜底。
 
-## 来源
+## 📖 来源
 
 - [nonebot-plugin-rollpig](https://github.com/Bearlele/nonebot-plugin-rollpig) — 小猪数据与图片资源
 - [astrbot_plugin_rollpig](https://github.com/MegSopern/astrbot_plugin_rollpig) — 每日固定结果与失败降级逻辑参考
 
-## License
+## 📄 License
 
 [MIT](LICENSE)
