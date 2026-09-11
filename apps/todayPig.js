@@ -128,7 +128,7 @@ export class TodayPig extends plugin {
       const store = await ensurePigHubSynced()
       const failed = store._failed || 0
       const failMsg = failed > 0 ? `\n${failed} 张下载失败已跳过` : ""
-      await e.reply([`PigHub 同步完成：${store.count} 个小猪${failMsg}\n现在可以使用「随机小猪」和「找猪」了~`, getButtons()])
+      await e.reply([`PigHub 同步完成：${store.count} 个小猪${failMsg}\n现在可以使用「/随机小猪」和「/找猪」了~`, getButtons()])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] PigHub 同步失败：${error.message}`, error)
@@ -186,7 +186,7 @@ export class TodayPig extends plugin {
 
       const match = e.msg.match(/^[#/]?(随机猪猪|随机小猪)\s*(\d+)?$/)
       let count = match?.[2] ? parseInt(match[2]) : 1
-      count = Math.min(Math.max(count, 1), 20)
+      count = Math.min(Math.max(count, 1), 5)
 
       if (count === 1) {
         const pig = selectRandomPigHubImage()
@@ -201,15 +201,14 @@ export class TodayPig extends plugin {
           const idx = Math.floor(Math.random() * available.length)
           selected.push(available.splice(idx, 1)[0])
         }
-        const msgs = selected.map(pig => {
+        const arr = []
+        for (const pig of selected) {
           const imageFile = findPigHubImage(pig.local_file)
-          return {
-            message: [pig.title, segment.image(imageFile ? pathToFileURL(imageFile).href : pig.url)],
-            nickname: pig.title,
-            user_id: e.self_id,
-          }
-        })
-        await e.reply([await common.makeForwardMsg(e, msgs), getButtons()])
+          arr.push(`【${pig.title}】`)
+          arr.push(segment.image(imageFile ? pathToFileURL(imageFile).href : pig.url))
+        }
+        arr.push(getButtons())
+        await e.reply(arr)
       }
       return true
     } catch (error) {
@@ -307,7 +306,7 @@ export class TodayPig extends plugin {
 
       let targetId = e.at
       if (!targetId) {
-        await e.reply("请@一位群友进行小猪配种~\n用法：#小猪配种 @某人")
+        await e.reply("请@一位群友进行小猪配种~\n用法：/小猪配种@某人")
         return true
       }
       targetId = targetId.toString()
@@ -337,12 +336,12 @@ export class TodayPig extends plugin {
 
       const myPig = resolvePig(myId)
       if (!myPig) {
-        await e.reply("你还没有抽取小猪哦~快发「今日小猪」抽取后再配种吧！")
+        await e.reply("你还没有抽取小猪哦~快发「/今日小猪」抽取后再配种吧！")
         return true
       }
       const targetPig = resolvePig(targetId)
       if (!targetPig) {
-        await e.reply("对方还没有抽取小猪哦~让TA发「今日小猪」抽取后再配种吧！")
+        await e.reply("对方还没有抽取小猪哦~让TA发「/今日小猪」抽取后再配种吧！")
         return true
       }
 
@@ -423,7 +422,7 @@ export class TodayPig extends plugin {
       const userRecords = getUserRecords(e)
       const userIds = Object.keys(userRecords)
       if (userIds.length === 0) {
-        await e.reply("还没有排行数据哦~快发「今日小猪」开始收集吧！")
+        await e.reply("还没有排行数据哦~快发「/今日小猪」开始收集吧！")
         return true
       }
 
@@ -507,9 +506,9 @@ export class TodayPig extends plugin {
 
       if (!pig) {
         if (isTargetingOther) {
-          await e.reply("对方还没有今日小猪，图鉴也是空的~\n请让TA发「今日小猪」后再使用「小猪菜肴」做成菜肴")
+          await e.reply("对方还没有今日小猪，图鉴也是空的~\n请让TA发「/今日小猪」后再使用「/小猪做菜」做成菜肴")
         } else {
-          await e.reply("你还没有今日小猪，图鉴也是空的~\n请先发「今日小猪」后再使用「小猪菜肴」做成菜肴")
+          await e.reply("你还没有今日小猪，图鉴也是空的~\n请先发「/今日小猪」后再使用「/小猪做菜」做成菜肴")
         }
         return true
       }
@@ -520,11 +519,11 @@ export class TodayPig extends plugin {
       const msg = []
       if (imagePath) msg.push(segment.image(pathToFileURL(imagePath).href))
 
-      let text = `\n小猪菜肴\n\n`
-      if (source === "今日小猪") {
+      let text = `\n小猪做菜\n\n`
+      if (source === "/今日小猪") {
         text += `用${targetName}的今日小猪【${pig.name}】做成【${dish.name}】！\n`
       } else {
-        text += `${targetName}今天没有「今日小猪」，从小猪图鉴获取【${pig.name}】做成【${dish.name}】！\n`
+        text += `${targetName}今天没有「/今日小猪」，从小猪图鉴获取【${pig.name}】做成【${dish.name}】！\n`
       }
       text += `\n${dish.desc}\n${pig.description}\n\n真香！\n\n评语：${dish.review}`
       msg.push(text)
@@ -532,7 +531,7 @@ export class TodayPig extends plugin {
       await e.reply([...msg, getButtons()])
       return true
     } catch (error) {
-      logger.error(`[RollPig-Plugin] 小猪菜肴失败：${error.message}`, error)
+      logger.error(`[RollPig-Plugin] 小猪做菜失败：${error.message}`, error)
       await e.reply("做菜失败了...")
       return true
     }

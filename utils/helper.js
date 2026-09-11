@@ -2,7 +2,7 @@ export function getButtons() {
   return segment.button(
     [
       { text: "今日小猪", input: "/今日小猪" },
-      { text: "小猪菜肴", input: "/小猪菜肴" },
+      { text: "小猪做菜", input: "/小猪做菜" },
       { text: "小猪排行", input: "/小猪排行" }
     ],
     [
