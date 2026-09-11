@@ -2,7 +2,7 @@
 
 TRSS-Yunzai 小猪插件，兼容 QQBot / icqq 等适配器。提供每日小猪、PigHub 随机小猪、配种、排行、菜肴等功能。
 
-原项目：[RollPig-Plugin](https://github.com/QingYingX-Bot/RollPig-Plugin)
+原项目：[QingYingX-Bot/RollPig-Plugin](https://github.com/QingYingX-Bot/RollPig-Plugin)
 
 ## 安装
 
