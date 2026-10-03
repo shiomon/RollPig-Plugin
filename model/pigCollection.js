@@ -129,82 +129,8 @@ function cleanupOldData() {
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000
 
-function mergeUserRecords(a, b) {
-  if (!a) return b
-  if (!b) return a
-  const r = { ...a }
-
-  const collected = { ...(a.collected || {}) }
-  for (const [k, v] of Object.entries(b.collected || {})) collected[k] = Math.max(collected[k] || 0, v)
-  if (Object.keys(collected).length) r.collected = collected
-
-  if (a.dishes || b.dishes) {
-    const dishes = { ...(a.dishes || {}) }
-    for (const [k, v] of Object.entries(b.dishes || {})) dishes[k] = Math.max(dishes[k] || 0, v)
-    r.dishes = dishes
-  }
-
-  if (a.breedCount || b.breedCount) {
-    const breedCount = { ...(a.breedCount || {}) }
-    for (const [k, v] of Object.entries(b.breedCount || {})) breedCount[k] = Math.max(breedCount[k] || 0, v)
-    r.breedCount = breedCount
-  }
-
-  for (const k of ["cookCount", "stealCount"]) {
-    if (a[k] != null || b[k] != null) r[k] = Math.max(a[k] || 0, b[k] || 0)
-  }
-  for (const k of ["date", "pig_id", "cookDate", "stealDate", "userName", "userAvatar"]) {
-    if (b[k] != null) r[k] = b[k]
-  }
-  return r
-}
-
-const decodeHexDir = name => name.replace(/_([0-9a-f]{2})_/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-const encodeHexDir = name => name.replace(/[^A-Za-z0-9_-]/g, ch => `_${ch.charCodeAt(0).toString(16)}_`)
-
-function migrateGroupDir(groupDir, srcName, dstName) {
-  const srcDir = path.join(groupDir, srcName)
-  const dstDir = path.join(groupDir, dstName)
-  try {
-    const srcFile = path.join(srcDir, "users.json")
-    if (!fs.existsSync(srcFile)) {
-      if (!fs.existsSync(dstDir)) fs.renameSync(srcDir, dstDir)
-      else fs.rmSync(srcDir, { recursive: true, force: true })
-      return
-    }
-    if (!fs.existsSync(dstDir)) {
-      fs.mkdirSync(dstDir, { recursive: true })
-      saveUsersFile(path.join(dstDir, "users.json"), loadUsersFile(srcFile))
-    } else {
-      const merged = loadUsersFile(path.join(dstDir, "users.json"))
-      for (const [uid, rec] of Object.entries(loadUsersFile(srcFile))) {
-        merged[uid] = mergeUserRecords(merged[uid], rec)
-      }
-      saveUsersFile(path.join(dstDir, "users.json"), merged)
-    }
-    fs.rmSync(srcDir, { recursive: true, force: true })
-    logger.mark(`[RollPig-Plugin] 已迁移群目录 ${srcName} → ${dstName}`)
-  } catch (err) {
-    logger.warn(`[RollPig-Plugin] 迁移群目录失败：${srcName}`, err)
-  }
-}
-
-function migrateHexGroupDirs() {
-  const groupDir = path.join(DATA_DIR, "group")
-  if (!fs.existsSync(groupDir)) return
-  for (const name of fs.readdirSync(groupDir)) {
-    const decoded = decodeHexDir(name)
-    if (decoded === name) continue
-    if (encodeHexDir(decoded) !== name) continue
-    const target = encodeGroupDir(decoded)
-    if (target === name) continue
-    migrateGroupDir(groupDir, name, target)
-  }
-}
-
 export function initStorage() {
   fs.mkdirSync(path.join(DATA_DIR, "private"), { recursive: true })
-  migrateHexGroupDirs()
   cleanupOldData()
   setInterval(cleanupOldData, CLEANUP_INTERVAL_MS).unref()
 }
