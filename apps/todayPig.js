@@ -23,7 +23,7 @@ import {
   recordSteal,
   getDishStats,
   loadBreedData,
-  checkPairBreed,
+  checkPair,
   commitBreed,
   getRankingList,
   summarizePigCollection,
@@ -478,7 +478,7 @@ export class TodayPig extends plugin {
         return true
       }
 
-      const { pairKey, pairCount } = checkPairBreed(userRecords, myId, targetId, date)
+      const { pairKey, pairCount } = checkPair(userRecords, myId, targetId, date, "pair")
       if (pairCount >= 1) {
         await e.reply([segment.at(e.user_id), "之前已经和TA配种过了，换别的群友试试吧~", getButtons()])
         return true
@@ -621,6 +621,12 @@ export class TodayPig extends plugin {
         return true
       }
 
+      const { pairKey, pairCount } = checkPair(userRecords, myId, targetId, date, "cookpair")
+      if (pairCount >= 1) {
+        await e.reply([segment.at(e.user_id), "之前已经烤过TA了，换别的群友试试吧~", getButtons()])
+        return true
+      }
+
       const { pig: myPig } = resolvePig(e, myId, date, userRecords)
       if (!await ensureHasTodayPig(e, myPig, "你还没有今日小猪，图鉴也是空的~\n请先发「/今日小猪」后再烤群友的小猪")) return true
 
@@ -644,9 +650,13 @@ export class TodayPig extends plugin {
 
       const failLine = COOK_FAIL_LINES[Math.floor(Math.random() * COOK_FAIL_LINES.length)]
 
-      const cookResult = recordCook(e, myId, date, success ? dish.name : null)
-      if (success && !cookResult.recorded) {
-        await e.reply([segment.at(e.user_id), "今天已经烤过了哦~", getButtons()])
+      const cookResult = recordCook(e, myId, date, success ? dish.name : null, pairKey, targetId)
+      if (!cookResult.recorded) {
+        if (cookResult.alreadyPair) {
+          await e.reply([segment.at(e.user_id), "刚刚已经烤过TA了，换别的群友试试吧~", getButtons()])
+        } else {
+          await e.reply([segment.at(e.user_id), "今天已经烤过了哦~", getButtons()])
+        }
         return true
       }
       const saveId = `cook_${e.user_id}`

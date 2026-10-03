@@ -254,18 +254,34 @@ export function getPigCollection(e, userId) {
   return record?.collected || {}
 }
 
-export function recordCook(e, userId, date, dishName) {
-  if (!dishName) return { recorded: false, record: null }
+export function recordCook(e, userId, date, dishName, pairKey, targetId) {
   const uid = String(userId)
   return atomicUpdate(e, (records) => {
-    const record = records[uid] || { collected: {} }
-    if (record.cookDate === date) return { changed: false, recorded: false, record }
-    record.cookDate = date
-    record.cookCount = (record.cookCount || 0) + 1
-    if (!record.dishes) record.dishes = {}
-    record.dishes[dishName] = (record.dishes[dishName] || 0) + 1
-    records[uid] = record
-    return { recorded: true, record }
+    const myRec = records[uid] || { collected: {} }
+    if (pairKey && (myRec.breedCount?.[pairKey] || 0) >= 1) {
+      return { changed: false, recorded: false, alreadyPair: true, record: myRec }
+    }
+    if (dishName && myRec.cookDate === date) {
+      return { changed: false, recorded: false, alreadyCooked: true, record: myRec }
+    }
+    if (pairKey) {
+      for (const id of [uid, String(targetId)]) {
+        const rec = records[id] || { collected: {} }
+        if (!rec.breedCount) rec.breedCount = {}
+        rec.breedCount[pairKey] = (rec.breedCount[pairKey] || 0) + 1
+        cleanOldBreedKeys(rec.breedCount, date)
+        records[id] = rec
+      }
+    }
+    if (dishName) {
+      const rec = records[uid] || { collected: {} }
+      rec.cookDate = date
+      rec.cookCount = (rec.cookCount || 0) + 1
+      if (!rec.dishes) rec.dishes = {}
+      rec.dishes[dishName] = (rec.dishes[dishName] || 0) + 1
+      records[uid] = rec
+    }
+    return { recorded: true, record: records[uid] }
   })
 }
 
@@ -317,9 +333,9 @@ export function loadBreedData(e, myId, date) {
   return { userRecords, userKey, userBreedCount }
 }
 
-export function checkPairBreed(userRecords, myId, targetId, date) {
+export function checkPair(userRecords, myId, targetId, date, prefix) {
   const uid = String(myId)
-  const pairKey = `pair:${[String(myId), String(targetId)].sort().join(":")}:${date}`
+  const pairKey = `${prefix}:${[String(myId), String(targetId)].sort().join(":")}:${date}`
   const pairCount = userRecords[uid]?.breedCount?.[pairKey] || 0
   return { pairKey, pairCount }
 }
