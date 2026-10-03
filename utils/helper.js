@@ -21,6 +21,10 @@ export function getButtons() {
   )
 }
 
+export function at(e) {
+  return e.group_id ? [segment.at(e.user_id)] : []
+}
+
 export function calcCompatibility(id1, id2, date) {
   const str = [id1, id2].sort().join("") + date
   let hash = 0
