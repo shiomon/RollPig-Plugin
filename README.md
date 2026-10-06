@@ -33,12 +33,13 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 | `#小猪图鉴` | 查看小猪图鉴与菜谱，含收集率、本命猪、共抓猪、拿手菜、共做菜 |
 | `@群友#小猪配种`| 两只小猪的般配度（≥40%成功），成功则新小猪，失败可换群友再试 |
 | `@群友#烤群友` | 用群友今日小猪（或图鉴随机）做成随机菜肴（26道菜，60%成功率,失败可换群友再试）|
-| `@群友#偷小猪` | 偷群友的小猪（30%成功率），成功存入自己图鉴；每人每日限1次（无论成败） |
+| `@群友#偷猪` | 偷群友的小猪（30%成功率），成功存入自己图鉴；每人每日限1次（无论成败） |
 | `#随机小猪 5`| 从本地缓存随机抽取，可指定数量（默认1，最大5），多张一次性发送 |
 | `#找猪 安卓 `| 搜索本地缓存，单条直接发送，多条转发消息 |
 | `#小猪同步` | 手动同步 PigHub图片资源到本地（仅Bot主人） |
 | `#小猪帮助` |查看帮助图。 |
-<img width="540" height="1021" alt="069840691a64f7faf3f755a7356c4a63" src="https://github.com/user-attachments/assets/0ea18319-63af-4cd1-a503-cfb2f3a0ea45" />
+<img width="540" height="1021" alt="436554084719e85d188e6fa94f87cf56" src="https://github.com/user-attachments/assets/c413970e-ed3f-45e9-9ce1-00f405346ec6" />
+
 
 ## 🔘 按钮
 
@@ -46,7 +47,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 
 ```
 今日小猪 | 小猪图鉴 | 小猪排行
-小猪配种 | 烤群友   | 偷小猪
+小猪配种 | 烤群友   | 偷猪
 ```
 
 - 需要 @群友的按钮（小猪配种 / 烤群友 / 偷小猪）点击后进入输入态
