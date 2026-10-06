@@ -13,7 +13,7 @@ export function getFontLink() {
     const css = fs.readFileSync(path.join(FONT_DIR, "emoji.css"), "utf8")
     const fontDirUrl = pathToFileURL(FONT_DIR).href + "/"
     return css
-      .replace(/font-display:\s*swap/, "font-display:block")
+      .replace(/font-display:\s*swap/g, "font-display:block")
       .replace(/url\("__FONT_DIR__\/([^"]+\.woff2)"\)/g, (_, name) =>
         `url("${fontDirUrl}${name}")`)
   } catch (e) {
