@@ -17,8 +17,8 @@ export function generateCookHTML(data) {
 <html>
 <head>
 <meta charset="utf-8">
-${getFontLink()}
 <style>
+  ${getFontLink()}
   ${BASE_RESET_CSS}
   body { margin: 0; }
   #container { background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 50%, #ffe0b2 100%); ${BODY_FONT} padding: 24px; width: 520px; }

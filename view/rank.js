@@ -24,8 +24,8 @@ export function generateRankHTML(top, total) {
 <html>
 <head>
 <meta charset="utf-8">
-${getFontLink()}
 <style>
+  ${getFontLink()}
   ${BASE_RESET_CSS}
   body { margin: 0; }
   #container { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 700px; }

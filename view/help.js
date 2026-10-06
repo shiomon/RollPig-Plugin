@@ -20,8 +20,8 @@ export function generateHelpHTML() {
 <html>
 <head>
 <meta charset="utf-8">
-${getFontLink()}
 <style>
+  ${getFontLink()}
   ${BASE_RESET_CSS}
   body { margin: 0; }
   #container { width: 540px; padding: 24px; background: linear-gradient(150deg, #d3e4ff 0%, #c3d3ff 45%, #ffc6dc 100%); ${BODY_FONT} }
