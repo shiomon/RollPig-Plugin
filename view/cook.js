@@ -1,4 +1,4 @@
-import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT, EMOJI_FONT } from "../utils/html.js"
 
 export function generateCookHTML(data) {
 
@@ -22,8 +22,8 @@ ${getFontLink()}
   ${BASE_RESET_CSS}
   body { margin: 0; }
   #container { background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 50%, #ffe0b2 100%); ${BODY_FONT} padding: 24px; width: 520px; }
-  .header { text-align: center; margin-bottom: 8px; font-size: 24px; color: #1a1a1a; font-weight: bold; }
-  .subtitle { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 16px; }
+  .header { text-align: center; margin-bottom: 8px; font-size: 24px; color: #1a1a1a; font-weight: bold; ${EMOJI_FONT} }
+  .subtitle { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 16px; ${EMOJI_FONT} }
   .subtitle.success { color: #e65100; }
   .subtitle.fail { color: #d32f2f; }
   .images { display: flex; align-items: center; justify-content: center; gap: 0; width: 100%; margin-bottom: 12px; }

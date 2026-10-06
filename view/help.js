@@ -1,4 +1,4 @@
-import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT, EMOJI_FONT } from "../utils/html.js"
 import { HELP_GROUPS } from "../model/helpData.js"
 
 export function generateHelpHTML() {
@@ -26,11 +26,11 @@ ${getFontLink()}
   body { margin: 0; }
   #container { width: 540px; padding: 24px; background: linear-gradient(150deg, #d3e4ff 0%, #c3d3ff 45%, #ffc6dc 100%); ${BODY_FONT} }
   .card { padding: 26px 24px 20px; border-radius: 22px; background: rgb(255 255 255 / 80%); box-shadow: 0 18px 44px rgb(120 140 170 / 38%); }
-  .title { text-align: center; color: #e26c82; font-size: 34px; font-weight: 800; }
+  .title { text-align: center; color: #e26c82; font-size: 34px; font-weight: 800; ${EMOJI_FONT} }
   .subtitle { margin: 8px 0 20px; text-align: center; color: #3f4d63; font-size: 14px; }
-  .group-title { margin: 4px 0 12px; color: #5b6b7f; font-size: 15px; font-weight: 700; }
+  .group-title { margin: 4px 0 12px; color: #5b6b7f; font-size: 15px; font-weight: 700; ${EMOJI_FONT} }
   .item { display: flex; align-items: center; gap: 14px; padding: 11px 14px; margin-bottom: 10px; border: 1px solid #e6eef7; border-radius: 14px; background: rgb(255 255 255 / 92%); box-shadow: 0 4px 14px rgb(120 140 170 / 18%); }
-  .icon { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ffe3ec, #e3f0ff); font-size: 24px; }
+  .icon { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ffe3ec, #e3f0ff); font-size: 24px; ${EMOJI_FONT} }
   .text { min-width: 0; }
   .cmd { color: #2b3a4a; font-size: 16px; font-weight: 700; }
   .desc { margin-top: 3px; color: #4a586e; font-size: 12.5px; }

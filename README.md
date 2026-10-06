@@ -30,7 +30,7 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 | --- | --- |
 | `#今日小猪` | 抽取今天属于自己的小猪，自动记录收集（每人每日1次） |
 | `#小猪排行` | 群聊用户收集种类排行Top50，含头像、昵称、进度条 |
-| `#猪圈和菜` | 查看小猪图鉴与菜谱，含收集率、本命猪、共抓猪、拿手菜、共做菜 |
+| `#小猪图鉴` | 查看小猪图鉴与菜谱，含收集率、本命猪、共抓猪、拿手菜、共做菜 |
 | `@群友#小猪配种`| 两只小猪的般配度（≥40%成功），成功则新小猪，失败可换群友再试 |
 | `@群友#烤群友` | 用群友今日小猪（或图鉴随机）做成随机菜肴（26道菜，60%成功率,失败可换群友再试）|
 | `@群友#偷小猪` | 偷群友的小猪（30%成功率），成功存入自己图鉴；每人每日限1次（无论成败） |
@@ -45,12 +45,12 @@ git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin
 每条回复底部附带 6 个按钮（分 2 行，每行 3 个）：
 
 ```
-今日小猪 | 猪圈和菜 | 小猪排行
+今日小猪 | 小猪图鉴 | 小猪排行
 小猪配种 | 烤群友   | 偷小猪
 ```
 
 - 需要 @群友的按钮（小猪配种 / 烤群友 / 偷小猪）点击后进入输入态
-- 按钮在 icqq 等非 QQBot 适配器下自动忽略，不影响功能
+- 非 QQBot 适配器自动替换为文字指令提示
 
 ## 📂 项目结构
 
@@ -63,6 +63,7 @@ RollPig-Plugin/
 │   ├── pigCollection.js    # 收集记录存储
 │   └── dishes.js           # 26道菜肴数据
 ├── utils/helper.js         # 按钮 + 般配度算法
+├── utils/html.js           # emoji字体 + XSS转义
 ├── view/
 │   ├── breed.js            # 配种结果渲染
 │   ├── cook.js             # 烤群友渲染
@@ -70,6 +71,7 @@ RollPig-Plugin/
 │   └── rank.js             # 排行渲染
 └── resources/
     ├── local/              # 102只本地小猪（pig.json + image/ + card/ + dish/ + 模板）
+    ├── fonts/              # emoji 字体（Noto Color Emoji woff2 + emoji.css）
     └── pighub/             # PigHub缓存（gitignore，需手动同步）
 ```
 
@@ -83,6 +85,7 @@ RollPig-Plugin/
 | `resources/local/dish/` | 26 张菜肴图片 |
 | `resources/local/pig-grid.html` | 猪圈/菜谱渲染模板（art-template） |
 | `resources/local/rank.html` | 排行/配种/烤群友/帮助渲染模板 |
+| `resources/fonts/` | emoji 字体（本地化，不依赖外网） |
 | `resources/pighub/` | PigHub 缓存（`.gitignore`，`#小猪同步` 下载） |
 
 ## 💾 数据存储

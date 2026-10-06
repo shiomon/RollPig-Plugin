@@ -1,4 +1,4 @@
-import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT, EMOJI_FONT } from "../utils/html.js"
 
 export function generateRankHTML(top, total) {
   const medals = ['🥇', '🥈', '🥉']
@@ -30,11 +30,11 @@ ${getFontLink()}
   body { margin: 0; }
   #container { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 700px; }
   .header { text-align: center; margin-bottom: 20px; }
-  .title { font-size: 26px; color: #1a1a1a; font-weight: bold; }
+  .title { font-size: 26px; color: #1a1a1a; font-weight: bold; ${EMOJI_FONT} }
   .subtitle { font-size: 14px; color: #444; margin-top: 6px; }
   .row { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.6); border-radius: 12px; padding: 10px 16px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .row.current { background: rgba(255,182,193,0.2); border: 2px solid #ffb6c1; }
-  .rank { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; }
+  .rank { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; ${EMOJI_FONT} }
   .rank-num { font-size: 18px; color: #333; font-weight: bold; }
   .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; position: relative; background: linear-gradient(135deg, #ffb6c1, #ffc8dd); }
   .avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }

@@ -24,4 +24,6 @@ export function getFontLink() {
 
 export const BASE_RESET_CSS = "* { margin: 0; padding: 0; box-sizing: border-box; }"
 
-export const BODY_FONT = "font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'Noto Color Emoji', 'Microsoft YaHei', 'PingFang SC', sans-serif;"
+export const BODY_FONT = "font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;"
+
+export const EMOJI_FONT = "font-family: 'Noto Color Emoji', 'Noto Sans CJK SC', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;"

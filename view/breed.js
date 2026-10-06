@@ -1,4 +1,4 @@
-import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT, EMOJI_FONT } from "../utils/html.js"
 
 export const BREED_TEXTS = {
   successLabel: "配种诞生了新小猪！",
@@ -34,7 +34,7 @@ ${getFontLink()}
   ${BASE_RESET_CSS}
   body { margin: 0; }
   #container { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 500px; }
-  .header { text-align: center; margin-bottom: 16px; font-size: 24px; color: #1a1a1a; font-weight: bold; }
+  .header { text-align: center; margin-bottom: 16px; font-size: 24px; color: #1a1a1a; font-weight: bold; ${EMOJI_FONT} }
   .parents { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; }
   .pig { text-align: center; }
   .pig img { width: 150px; height: 150px; object-fit: cover; border-radius: 12px; }
