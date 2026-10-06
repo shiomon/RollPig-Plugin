@@ -65,6 +65,10 @@ const PIG_GRID_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "pig-grid.html")
 const RANK_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "rank.html")
 const RENDER_NAME = "今日小猪"
 
+const WAIT_FONTS = async (page) => {
+  await page.evaluate(() => document.fonts.ready)
+}
+
 const RANDOM_PIG_RE = new RegExp(`${COMMAND_PREFIX}(随机猪猪|随机小猪)\\s*(\\d+)?$`)
 const FIND_PIG_RE = new RegExp(`${COMMAND_PREFIX}(找猪|搜猪)\\s*(\\S.*)$`)
 
@@ -404,6 +408,7 @@ export class TodayPig extends plugin {
         saveId,
         imgType: "png",
         pageGotoParams: { waitUntil: "load" },
+        beforeScreenshot: WAIT_FONTS,
         fontLink: getFontLink(),
         title: "🐷 我的猪圈",
         owner: `${userName}的猪圈`,
@@ -513,6 +518,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId,
           pageGotoParams: { waitUntil: "load" },
+        beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         await e.reply([...at(e), `${success ? "🎉" : "💔"} 和对方的「${targetPig.name}」配种${success ? "成功" : "失败"}！\n`, img, getButtons(e)])
@@ -571,6 +577,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId: rankSaveId,
           pageGotoParams: { waitUntil: "load" },
+        beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         await e.reply([...at(e), "\n", img, getButtons(e)])
@@ -663,6 +670,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId,
           pageGotoParams: { waitUntil: "load" },
+        beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         const head = success
@@ -757,6 +765,7 @@ export class TodayPig extends plugin {
         imgType: "png",
         saveId,
         pageGotoParams: { waitUntil: "load" },
+        beforeScreenshot: WAIT_FONTS,
       })
       if (!img) throw new Error("截图返回空")
       await e.reply([...at(e), "\n", img, getButtons(e)])
