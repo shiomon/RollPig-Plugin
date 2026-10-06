@@ -18,7 +18,7 @@ git clone --depth=1 https://github.com/shiomon/RollPig-Plugin.git plugins/RollPi
 git clone --depth=1 https://ghfast.top/https://github.com/shiomon/RollPig-Plugin.git plugins/RollPig-Plugin
 ```
 
-安装后重启 Yunzai，发送 `#小猪同步` 下载 PigHub 图片资源。
+安装后重启 Yunzai，发送 `#小猪同步` 下载 PigHub 1000多图片资源，资源278M无必要可不同步。
 
 ## 📋 指令
 
