@@ -460,7 +460,7 @@ export class TodayPig extends plugin {
       if (!await ensureNotSelf(e, targetId, "不能和自己配种哦~找别的群友试试吧！")) return true
 
       const pigPool = getPigPool()
-      const pigMap = getPigMap()
+      const pigMap = new Map(pigPool.map(p => [p.id, p]))
 
       const { pig: myPig } = resolvePig(e, myId, date, userRecords, pigMap)
       if (!await ensureHasTodayPig(e, myPig, "你还没有今日小猪，图鉴也是空的~\n请先发「/今日小猪」后再配种")) return true
@@ -518,7 +518,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId,
           pageGotoParams: { waitUntil: "load" },
-        beforeScreenshot: WAIT_FONTS,
+          beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         await e.reply([...at(e), `${success ? "🎉" : "💔"} 和对方的「${targetPig.name}」配种${success ? "成功" : "失败"}！\n`, img, getButtons(e)])
@@ -577,7 +577,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId: rankSaveId,
           pageGotoParams: { waitUntil: "load" },
-        beforeScreenshot: WAIT_FONTS,
+          beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         await e.reply([...at(e), "\n", img, getButtons(e)])
@@ -670,7 +670,7 @@ export class TodayPig extends plugin {
           imgType: "png",
           saveId,
           pageGotoParams: { waitUntil: "load" },
-        beforeScreenshot: WAIT_FONTS,
+          beforeScreenshot: WAIT_FONTS,
         })
         if (!img) throw new Error("截图返回空")
         const head = success

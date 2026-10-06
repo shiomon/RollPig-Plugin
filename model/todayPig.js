@@ -108,7 +108,8 @@ export function buildImageIndex(imageDir = IMAGE_DIR) {
   return index
 }
 
-export function findPigImage(pigId, imageDir = IMAGE_DIR) {
+export function findPigImage(pigId, imageDir = IMAGE_DIR, imageIndex = null) {
   if (!PIG_ID_PATTERN.test(pigId)) return null
-  return buildImageIndex(imageDir).get(pigId) || null
+  const index = imageIndex || buildImageIndex(imageDir)
+  return index.get(pigId) || null
 }
