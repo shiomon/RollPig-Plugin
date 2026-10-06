@@ -2,8 +2,8 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;800&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
     <style>
+      {{@ fontLink}}
       * {
         box-sizing: border-box;
       }
@@ -12,7 +12,7 @@
       body {
         margin: 0;
         background: transparent;
-        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Color Emoji", sans-serif;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
       }
 
       #container {
@@ -29,7 +29,7 @@
         justify-content: space-between;
         gap: 24px;
         margin-bottom: 28px;
-        padding: 18px 26px;
+        padding: 18px 0 18px 26px;
         border-radius: 18px;
         background: rgb(255 255 255 / 55%);
         backdrop-filter: blur(10px);
@@ -39,38 +39,45 @@
       .panel .title {
         position: relative;
         z-index: 1;
+        flex-shrink: 0;
+        white-space: nowrap;
         color: #e26c82;
         font-size: 48px;
         font-weight: 800;
+        font-family: "Noto Color Emoji", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
       }
 
       .stats {
         position: relative;
         z-index: 1;
+        margin-left: auto;
+        margin-right: -14px;
         display: grid;
-        grid-template-columns: 280px 280px;
-        column-gap: 28px;
-        row-gap: 6px;
+        grid-template-columns: 220px 220px;
+        column-gap: 20px;
+        row-gap: 4px;
         color: #334155;
-        font-size: 22px;
-        line-height: 1.5;
+        font-size: 20px;
+        line-height: 1.4;
       }
 
       .stat-item {
         display: flex;
         align-items: baseline;
-        gap: 4px;
+        gap: 2px;
         white-space: nowrap;
       }
 
       .stat-label {
-        flex: 0 0 128px;
+        flex: 0 0 112px;
         color: #64748b;
+        font-family: "Noto Color Emoji", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
       }
 
       .stat-value {
         color: #1a2a3a;
         font-weight: 700;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
       }
 
       .favorite .stat-value {
@@ -112,13 +119,15 @@
         line-height: 68px;
         filter: grayscale(1);
         opacity: 0.6;
+        font-family: "Noto Color Emoji", sans-serif;
       }
 
       .name {
         overflow: hidden;
         color: #334155;
-        font-size: 11px;
-        line-height: 16px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 18px;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -187,15 +196,25 @@
         line-height: 68px;
         filter: grayscale(1);
         opacity: 0.5;
+        font-family: "Noto Color Emoji", sans-serif;
       }
 
       .dish-name {
         overflow: hidden;
         color: #57534e;
-        font-size: 11px;
-        line-height: 16px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 18px;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .dish-index {
+        position: absolute;
+        top: 4px;
+        left: 5px;
+        color: #64748b;
+        font-size: 10px;
       }
 
       .dish-count {
@@ -260,6 +279,7 @@
       <section class="dish-grid">
           {{each dishItems dish}}
           <div class="dish-cell {{if !dish.owned}}locked{{/if}}">
+            <span class="dish-index">{{dish.index}}</span>
             {{if dish.owned}}
             <img class="dish-image" src="{{dish.image}}" alt="" />
             {{if dish.count > 0}}<span class="dish-count">×{{dish.count}}</span>{{/if}}

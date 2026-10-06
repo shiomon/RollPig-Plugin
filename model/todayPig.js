@@ -21,8 +21,6 @@ const PIG_JSON_PATH = path.join(LOCAL_RESOURCE_DIR, "pig.json")
 
 const IMAGE_DIR = path.join(LOCAL_RESOURCE_DIR, "image")
 
-let cachedPigPool
-let cachedPigMap
 
 export function getShanghaiDate(timestamp = Date.now()) {
   const parts = Object.fromEntries(
@@ -68,15 +66,11 @@ function loadPigPool(file = PIG_JSON_PATH) {
 }
 
 export function getPigPool() {
-  cachedPigPool ??= loadPigPool()
-  return cachedPigPool
+  return loadPigPool()
 }
 
 export function getPigMap() {
-  if (!cachedPigMap) {
-    cachedPigMap = new Map(getPigPool().map(p => [p.id, p]))
-  }
-  return cachedPigMap
+  return new Map(getPigPool().map(p => [p.id, p]))
 }
 
 export function selectTodayPig(userId, date = getShanghaiDate(), pigPool = getPigPool()) {
@@ -90,9 +84,8 @@ export function selectTodayPig(userId, date = getShanghaiDate(), pigPool = getPi
 }
 
 
-const IMAGE_INDEX_CACHE = new Map()
 
-function buildImageIndex(imageDir) {
+export function buildImageIndex(imageDir = IMAGE_DIR) {
   const index = new Map()
   let names
   try {
@@ -117,10 +110,5 @@ function buildImageIndex(imageDir) {
 
 export function findPigImage(pigId, imageDir = IMAGE_DIR) {
   if (!PIG_ID_PATTERN.test(pigId)) return null
-  let index = IMAGE_INDEX_CACHE.get(imageDir)
-  if (!index) {
-    index = buildImageIndex(imageDir)
-    IMAGE_INDEX_CACHE.set(imageDir, index)
-  }
-  return index.get(pigId) || null
+  return buildImageIndex(imageDir).get(pigId) || null
 }

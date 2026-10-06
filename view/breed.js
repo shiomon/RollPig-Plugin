@@ -1,4 +1,4 @@
-import { esc, FONT_LINK, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
 
 export const BREED_TEXTS = {
   successLabel: "配种诞生了新小猪！",
@@ -29,10 +29,11 @@ export function generateBreedHTML(data) {
 <html>
 <head>
 <meta charset="utf-8">
-${FONT_LINK}
+${getFontLink()}
 <style>
   ${BASE_RESET_CSS}
-  body { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 500px; }
+  body { margin: 0; }
+  #container { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 500px; }
   .header { text-align: center; margin-bottom: 16px; font-size: 24px; color: #1a1a1a; font-weight: bold; }
   .parents { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; }
   .pig { text-align: center; }
@@ -56,6 +57,7 @@ ${FONT_LINK}
 </style>
 </head>
 <body>
+<div id="container">
   <div class="header">🐷 小猪配种结果</div>
   <div class="parents">
     <div class="pig">
@@ -74,6 +76,7 @@ ${FONT_LINK}
   </div>
   <div class="divider"></div>
   ${childSection}
+</div>
 </body>
 </html>`
 }

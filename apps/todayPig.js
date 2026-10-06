@@ -35,6 +35,7 @@ import {
   getPigMap,
   getShanghaiDate,
   selectTodayPig,
+  buildImageIndex,
 } from "../model/todayPig.js"
 
 import { PIG_DISHES, COOK_FAIL_LINES } from "../model/dishes.js"
@@ -57,17 +58,21 @@ import { generateRankHTML } from "../view/rank.js"
 import { generateBreedHTML, BREED_TEXTS } from "../view/breed.js"
 import { generateCookHTML } from "../view/cook.js"
 import { generateHelpHTML } from "../view/help.js"
+import { getFontLink } from "../utils/html.js"
 
 
 const PIG_GRID_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "pig-grid.html")
 const RANK_TEMPLATE = path.join(LOCAL_RESOURCE_DIR, "rank.html")
 const RENDER_NAME = "今日小猪"
 
-function makeImage(file, asSticker = false) {
+const RANDOM_PIG_RE = new RegExp(`${COMMAND_PREFIX}(随机猪猪|随机小猪)\\s*(\\d+)?$`)
+const FIND_PIG_RE = new RegExp(`${COMMAND_PREFIX}(找猪|搜猪)\\s*(\\S.*)$`)
+
+async function makeImage(file, asSticker = false) {
   if (!file) return null
   let buf = null
   try {
-    buf = fs.readFileSync(file)
+    buf = await fs.promises.readFile(file)
   } catch (err) {
     if (err.code !== "ENOENT") logger.warn(`[RollPig-Plugin] 读取图片失败：${file}`, err)
   }
@@ -132,9 +137,6 @@ async function ensureHasTodayPig(e, pig, message) {
   return true
 }
 
-function hasDoneToday(records, uid, date, field) {
-  return records[String(uid)]?.[field] === date
-}
 
 async function getMemberName(e, userId) {
   try {
@@ -149,9 +151,9 @@ async function getMemberName(e, userId) {
   }
 }
 
-function getMemberAvatar(e, userId) {
+async function getMemberAvatar(e, userId) {
   try {
-    const member = e.bot?.pickMember?.(e.group_id, userId)
+    const member = await e.bot?.pickMember?.(e.group_id, userId)
     if (!member) return null
     if (typeof member.getAvatarUrl === "function") return member.getAvatarUrl()
     if (member.avatar) return member.avatar
@@ -161,8 +163,7 @@ function getMemberAvatar(e, userId) {
   }
 }
 
-function resolvePig(e, userId, date, userRecords) {
-  const pigMap = getPigMap()
+function resolvePig(e, userId, date, userRecords, pigMap = getPigMap()) {
   const record = userRecords[String(userId)] || {}
   if (record.date === date && record.pig_id) {
     const pig = pigMap.get(record.pig_id)
@@ -190,7 +191,7 @@ export class TodayPig extends plugin {
         { reg: `${COMMAND_PREFIX}(随机猪猪|随机小猪)\\s*(\\d+)?$`, fnc: "randomPig" },
         { reg: `${COMMAND_PREFIX}(找猪|搜猪)\\s*(\\S.*)$`, fnc: "findPig" },
 
-        { reg: `${COMMAND_PREFIX}(我的猪圈|猪圈和菜)$`, fnc: "myPigpen" },
+        { reg: `${COMMAND_PREFIX}(我的猪圈|小猪图鉴)$`, fnc: "myPigpen" },
         { reg: `${COMMAND_PREFIX}(猪猪|小猪)配种$`, fnc: "pigBreed" },
         { reg: `${COMMAND_PREFIX}(猪猪|小猪)排行$`, fnc: "pigRank" },
         { reg: `${COMMAND_PREFIX}烤群友$`, fnc: "pigRoast" },
@@ -212,6 +213,7 @@ export class TodayPig extends plugin {
           }
         }
       }
+
     } catch (err) {
       logger.warn("[RollPig-Plugin] 初始化清理缓存失败:", err)
     }
@@ -226,7 +228,7 @@ export class TodayPig extends plugin {
     try {
       if (isPigHubReady()) {
         const store = getPigHubStore()
-        await e.reply([...at(e), `PigHub 资源已就绪：${store.count} 个小猪\n如需重新同步，请先删除 resources/pighub 目录`, getButtons()])
+        await e.reply([...at(e), `PigHub 资源已就绪：${store.count} 个小猪\n如需重新同步，请先删除 resources/pighub 目录`, getButtons(e)])
         return true
       }
 
@@ -234,7 +236,7 @@ export class TodayPig extends plugin {
       const store = await ensurePigHubSynced()
       const failed = store._failed || 0
       const failMsg = failed > 0 ? `\n${failed} 张下载失败已跳过` : ""
-      await e.reply([...at(e), `PigHub 同步完成：${store.count} 个小猪${failMsg}\n现在可以使用「/随机小猪」和「/找猪」了~`, getButtons()])
+      await e.reply([...at(e), `PigHub 同步完成：${store.count} 个小猪${failMsg}\n现在可以使用「/随机小猪」和「/找猪」了~`, getButtons(e)])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] PigHub 同步失败：${error.message}`, error)
@@ -248,44 +250,29 @@ export class TodayPig extends plugin {
       const date = getShanghaiDate()
       const userId = e.user_id
       const pigPool = getPigPool()
-
-      const userRecords = getUserRecords(e)
-      const existing = userRecords[String(userId)] || {}
-      if (existing.date === date && existing.pig_id) {
-        const pig = getPigMap().get(existing.pig_id)
-        if (pig) {
-          const imagePath = findPigImage(pig.id)
-          const msg = [...at(e), "今天已经抽过了~\n"]
-          if (imagePath) msg.push(makeImage(imagePath))
-          msg.push(`\n【${pig.name}】\n> ${pig.description}\n> ${pig.analysis}\n`, getButtons())
-          await e.reply(msg)
-          return true
-        }
-      }
-
       const pig = selectTodayPig(userId, date, pigPool)
 
       const result = recordDailyPig(e, userId, date, pig.id, {
         name: getUserName(e),
-        avatar: getMemberAvatar(e, userId)
+        avatar: await getMemberAvatar(e, userId)
       })
+
       if (!result.claimed) {
-        logger.warn(`[RollPig-Plugin] 今日小猪记录失败：已领取`)
         const storedPig = result.pig_id ? getPigMap().get(result.pig_id) : null
         const targetPig = storedPig || pig
-        const storedImage = findPigImage(targetPig.id)
-        const storedMsg = [...at(e), "今天已经抽过了~\n"]
-        if (storedImage) storedMsg.push(makeImage(storedImage))
-        storedMsg.push(`\n【${targetPig.name}】\n> ${targetPig.description}\n> ${targetPig.analysis}\n`, getButtons())
-        await e.reply(storedMsg)
+        const imagePath = findPigImage(targetPig.id)
+        const msg = [...at(e), "今天已经抽过了~\n"]
+        if (imagePath) msg.push(await makeImage(imagePath))
+        msg.push(`\n【${targetPig.name}】\n> ${targetPig.description}\n> ${targetPig.analysis}\n`, getButtons(e))
+        await e.reply(msg)
         return true
       }
 
       const prefix = result.count > 1 ? `🎉 第${result.count}次抽到这只小猪~\n` : "🎉 抓到一只新小猪啦~\n"
       const imagePath = findPigImage(pig.id)
       const msg = [...at(e), prefix]
-      if (imagePath) msg.push(makeImage(imagePath))
-      msg.push(`\n【${pig.name}】\n> ${pig.description}\n> ${pig.analysis}\n`, getButtons())
+      if (imagePath) msg.push(await makeImage(imagePath))
+      msg.push(`\n【${pig.name}】\n> ${pig.description}\n> ${pig.analysis}\n`, getButtons(e))
       await e.reply(msg)
       return true
     } catch (error) {
@@ -302,7 +289,7 @@ export class TodayPig extends plugin {
         return true
       }
 
-      const match = e.msg.match(new RegExp(`${COMMAND_PREFIX}(随机猪猪|随机小猪)\\s*(\\d+)?$`))
+      const match = e.msg.match(RANDOM_PIG_RE)
       let count = match?.[2] ? parseInt(match[2]) : 1
       count = Math.min(Math.max(count, 1), RANDOM_PIG_MAX)
 
@@ -310,7 +297,7 @@ export class TodayPig extends plugin {
         const pig = selectRandomPigHubImage()
         const imageFile = findPigHubImage(pig.local_file)
         if (!imageFile) throw new Error(`PigHub 图片缺失：${pig.local_file}`)
-        await e.reply([...at(e), "\n", makeImage(imageFile, true), getButtons()])
+        await e.reply([...at(e), "\n", await makeImage(imageFile, true), getButtons(e)])
       } else {
         const store = getPigHubStore()
         const selected = []
@@ -323,10 +310,10 @@ export class TodayPig extends plugin {
         for (const pig of selected) {
           const imageFile = findPigHubImage(pig.local_file)
           arr.push(`【${pig.title}】\n`)
-          arr.push(imageFile ? makeImage(imageFile) : segment.image(pig.url))
+          arr.push(imageFile ? await makeImage(imageFile) : segment.image(pig.url))
           arr.push("\n")
         }
-        arr.push(getButtons())
+        arr.push(getButtons(e))
         await e.reply(arr)
       }
       return true
@@ -344,7 +331,7 @@ export class TodayPig extends plugin {
         return true
       }
 
-      const match = e.msg.match(new RegExp(`${COMMAND_PREFIX}(找猪|搜猪)\\s*(\\S.*)$`))
+      const match = e.msg.match(FIND_PIG_RE)
       const keyword = (match?.[2] || "").trim().toLowerCase()
       if (!keyword) {
         await e.reply("请输入要搜索的关键词~\n如：/找猪 安卓")
@@ -361,20 +348,20 @@ export class TodayPig extends plugin {
       if (found.length === 1) {
         const pig = found[0]
         const imageFile = findPigHubImage(pig.local_file)
-        const img = imageFile ? makeImage(imageFile) : segment.image(pig.url)
-        await e.reply([...at(e), `${pig.title}-${pig.id}`, img, getButtons()])
+        const img = imageFile ? await makeImage(imageFile) : segment.image(pig.url)
+        await e.reply([...at(e), `${pig.title}-${pig.id}`, img, getButtons(e)])
       } else {
         const arr = [...at(e), "\n"]
         for (const pig of found.slice(0, 20)) {
           const imageFile = findPigHubImage(pig.local_file)
           arr.push(`【${pig.title}】-${pig.id}\n`)
-          arr.push(imageFile ? makeImage(imageFile) : segment.image(pig.url))
+          arr.push(imageFile ? await makeImage(imageFile) : segment.image(pig.url))
           arr.push("\n")
         }
         if (found.length > 20) {
           arr.push(`共 ${found.length} 个结果，仅展示前 20 个~\n`)
         }
-        arr.push(getButtons())
+        arr.push(getButtons(e))
         await e.reply(arr)
       }
       return true
@@ -393,17 +380,19 @@ export class TodayPig extends plugin {
       const counts = getPigCollection(e, e.user_id)
       const summary = summarizePigCollection(pigs, counts)
 
-      const items = pigs.map(pig => {
-        const image = findPigImage(pig.id)
-        return { ...pig, image: image ? pathToFileURL(image).href : "", owned: (counts[pig.id] || 0) > 0, count: counts[pig.id] || 0 }
+      const imageIndex = buildImageIndex()
+      const items = pigs.map((pig, i) => {
+        const image = imageIndex.get(pig.id)
+        return { ...pig, index: i + 1, image: image ? pathToFileURL(image).href : "", owned: (counts[pig.id] || 0) > 0, count: counts[pig.id] || 0 }
       })
 
       const userName = getUserName(e)
       const dishStats = getDishStats(e, e.user_id, PIG_DISHES.length)
-      const dishItems = PIG_DISHES.map(dish => {
+      const dishItems = PIG_DISHES.map((dish, i) => {
         const dishImage = path.join(LOCAL_RESOURCE_DIR, "dish", `${dish.name}.png`)
         return {
           name: dish.name,
+          index: i + 1,
           image: fs.existsSync(dishImage) ? pathToFileURL(dishImage).href : "",
           owned: (dishStats.dishes[dish.name] || 0) > 0,
           count: dishStats.dishes[dish.name] || 0,
@@ -415,6 +404,7 @@ export class TodayPig extends plugin {
         saveId,
         imgType: "png",
         pageGotoParams: { waitUntil: "load" },
+        fontLink: getFontLink(),
         title: "🐷 我的猪圈",
         owner: `${userName}的猪圈`,
         showStats: true,
@@ -435,7 +425,7 @@ export class TodayPig extends plugin {
       })
 
       if (!image) throw new Error("猪圈图片渲染失败")
-      await e.reply([...at(e), "\n", image, getButtons()])
+      await e.reply([...at(e), "\n", image, getButtons(e)])
       return true
     } catch (error) {
       logger.error(`[RollPig-Plugin] 我的猪圈失败：${error.message}`, error)
@@ -465,23 +455,24 @@ export class TodayPig extends plugin {
       if (!await ensureNotSelf(e, targetId, "不能和自己配种哦~找别的群友试试吧！")) return true
 
       const pigPool = getPigPool()
+      const pigMap = getPigMap()
 
-      const { pig: myPig } = resolvePig(e, myId, date, userRecords)
+      const { pig: myPig } = resolvePig(e, myId, date, userRecords, pigMap)
       if (!await ensureHasTodayPig(e, myPig, "你还没有今日小猪，图鉴也是空的~\n请先发「/今日小猪」后再配种")) return true
-      const { pig: targetPig } = resolvePig(e, targetId, date, userRecords)
+      const { pig: targetPig } = resolvePig(e, targetId, date, userRecords, pigMap)
       if (!await ensureHasTodayPig(e, targetPig, "TA还没有今日小猪，图鉴也是空的~\n请让TA发「/今日小猪」后再配种")) return true
 
       const score = calcCompatibility(myPig.id, targetPig.id, date)
       const desc = getMatchDesc(score)
 
       if (breedData.userBreedCount >= 1) {
-        await e.reply([...at(e), "今天已经配种过了哦~", getButtons()])
+        await e.reply([...at(e), "今天已经配种过了哦~", getButtons(e)])
         return true
       }
 
       const { pairKey, pairCount } = checkPair(userRecords, myId, targetId, date, "pair")
       if (pairCount >= 1) {
-        await e.reply([...at(e), "之前已经和TA配种过了，换别的群友试试吧~", getButtons()])
+        await e.reply([...at(e), "之前已经和TA配种过了，换别的群友试试吧~", getButtons(e)])
         return true
       }
 
@@ -492,13 +483,14 @@ export class TodayPig extends plugin {
       }
       const commitResult = commitBreed(e, myId, targetId, breedPig ? breedPig.id : null, breedData.userKey, pairKey)
       if (!commitResult.committed) {
-        await e.reply([...at(e), "刚刚已经配过种了哦~", getButtons()])
+        await e.reply([...at(e), "刚刚已经配过种了哦~", getButtons(e)])
         return true
       }
 
-      const myImage = findPigImage(myPig.id)
-      const targetImage = findPigImage(targetPig.id)
-      const breedImage = breedPig ? findPigImage(breedPig.id) : null
+      const imageIndex = buildImageIndex()
+      const myImage = imageIndex.get(myPig.id)
+      const targetImage = imageIndex.get(targetPig.id)
+      const breedImage = breedPig ? imageIndex.get(breedPig.id) : null
 
       const saveId = `breed_${e.user_id}`
       try {
@@ -523,22 +515,22 @@ export class TodayPig extends plugin {
           pageGotoParams: { waitUntil: "load" },
         })
         if (!img) throw new Error("截图返回空")
-        await e.reply([...at(e), `${success ? "🎉" : "💔"} 和对方的「${targetPig.name}」配种${success ? "成功" : "失败"}！\n`, img, getButtons()])
+        await e.reply([...at(e), `${success ? "🎉" : "💔"} 和对方的「${targetPig.name}」配种${success ? "成功" : "失败"}！\n`, img, getButtons(e)])
       } catch (renderErr) {
         logger.error("[RollPig-Plugin] 配种渲染失败:", renderErr)
         const msg = [`${success ? "🎉" : "💔"} 和对方的「${targetPig.name}」配种${success ? "成功" : "失败"}！\n`]
-        if (myImage) msg.push(makeImage(myImage))
+        if (myImage) msg.push(await makeImage(myImage))
         msg.push(`【${myPig.name}】×`)
-        if (targetImage) msg.push(makeImage(targetImage))
+        if (targetImage) msg.push(await makeImage(targetImage))
         msg.push(`【${targetPig.name}】\n\n般配度：${score}%\n${desc}\n\n`)
         if (success) {
           msg.push(`${BREED_TEXTS.successLabel}\n`)
-          if (breedImage) msg.push(makeImage(breedImage))
+          if (breedImage) msg.push(await makeImage(breedImage))
           msg.push(`\n【${breedPig.name}】\n${breedPig.description}\n\n${breedPig.analysis}\n\n${BREED_TEXTS.successFooter}`)
         } else {
           msg.push(`${BREED_TEXTS.failLabel}\n${BREED_TEXTS.failMsg}\n${BREED_TEXTS.failSub}\n${BREED_TEXTS.failFooter}`)
         }
-        await e.reply([...at(e), ...msg, getButtons()])
+        await e.reply([...at(e), ...msg, getButtons(e)])
       } finally {
         cleanupScreenshot(saveId)
       }
@@ -562,17 +554,15 @@ export class TodayPig extends plugin {
 
       const total = getPigPool().length
 
-      for (let i = 0; i < top.length; i += 10) {
-        await Promise.all(top.slice(i, i + 10).map(u => (async () => {
-          let userName = u.userName || await getMemberName(e, u.userId) || `用户${u.userId.slice(-4)}`
-          let userAvatar = u.userAvatar || getMemberAvatar(e, u.userId) || `https://q1.qlogo.cn/g?b=qq&nk=${u.userId}&s=100`
-          u.userName = userName
-          u.userAvatar = userAvatar
-          u.isCurrent = String(u.userId) === String(e.user_id)
-        })()))
-      }
+      await Promise.all(top.map(u => (async () => {
+        let userName = u.userName || await getMemberName(e, u.userId) || `用户${u.userId.slice(-4)}`
+        let userAvatar = u.userAvatar || await getMemberAvatar(e, u.userId) || `https://q1.qlogo.cn/g?b=qq&nk=${u.userId}&s=100`
+        u.userName = userName
+        u.userAvatar = userAvatar
+        u.isCurrent = String(u.userId) === String(e.user_id)
+      })()))
 
-      const rankSaveId = `rank_${e.group_id}_${Date.now()}`
+      const rankSaveId = `rank_${e.user_id}`
       try {
         const html = generateRankHTML(top, total)
         const img = await puppeteer.screenshot(RENDER_NAME, {
@@ -583,13 +573,13 @@ export class TodayPig extends plugin {
           pageGotoParams: { waitUntil: "load" },
         })
         if (!img) throw new Error("截图返回空")
-        await e.reply([...at(e), "\n", img, getButtons()])
+        await e.reply([...at(e), "\n", img, getButtons(e)])
       } catch (renderErr) {
         logger.error("[RollPig-Plugin] 排行渲染失败:", renderErr)
         const rankList = top.map((u, i) =>
           `第${i + 1}名：${u.userName}（${u.count}/${total}）${u.isCurrent ? " ← 你" : ""}`
         )
-        await e.reply([...at(e), `小猪图鉴排行 Top50\n\n${rankList.join("\n")}`, getButtons()])
+        await e.reply([...at(e), `小猪图鉴排行 Top50\n\n${rankList.join("\n")}`, getButtons(e)])
       } finally {
         cleanupScreenshot(rankSaveId)
       }
@@ -617,23 +607,16 @@ export class TodayPig extends plugin {
       const targetName = await getMemberName(e, targetId) || "群友"
 
       const userRecords = getUserRecords(e)
-      if (hasDoneToday(userRecords, myId, date, "cookDate")) {
-        await e.reply([...at(e), "今天烤过群友的小猪了，明天再来吧！", getButtons()])
-        return true
-      }
 
-      const { pairKey, pairCount } = checkPair(userRecords, myId, targetId, date, "cookpair")
-      if (pairCount >= 1) {
-        await e.reply([...at(e), "之前已经烤过TA了，换别的群友试试吧~", getButtons()])
-        return true
-      }
-
-      const { pig: myPig } = resolvePig(e, myId, date, userRecords)
+      const pigMap = getPigMap()
+      const { pig: myPig } = resolvePig(e, myId, date, userRecords, pigMap)
       if (!await ensureHasTodayPig(e, myPig, "你还没有今日小猪，图鉴也是空的~\n请先发「/今日小猪」后再烤群友的小猪")) return true
 
-      const { pig, source } = resolvePig(e, targetId, date, userRecords)
+      const { pig, source } = resolvePig(e, targetId, date, userRecords, pigMap)
 
       if (!await ensureHasTodayPig(e, pig, "TA还没有今日小猪，图鉴也是空的~\n请让TA发「/今日小猪」后再烤TA的小猪")) return true
+
+      const { pairKey } = checkPair(userRecords, myId, targetId, date, "cookpair")
 
       const dish = PIG_DISHES[Math.floor(Math.random() * PIG_DISHES.length)]
       const dishImagePath = path.join(LOCAL_RESOURCE_DIR, "dish", `${dish.name}.png`)
@@ -654,9 +637,9 @@ export class TodayPig extends plugin {
       const cookResult = recordCook(e, myId, date, success ? dish.name : null, pairKey, targetId)
       if (!cookResult.recorded) {
         if (cookResult.alreadyPair) {
-          await e.reply([...at(e), "刚刚已经烤过TA了，换别的群友试试吧~", getButtons()])
+          await e.reply([...at(e), "刚刚已经烤过TA了，换别的群友试试吧~", getButtons(e)])
         } else {
-          await e.reply([...at(e), "今天已经烤过了哦~", getButtons()])
+          await e.reply([...at(e), "今天已经烤过了哦~", getButtons(e)])
         }
         return true
       }
@@ -685,18 +668,18 @@ export class TodayPig extends plugin {
         const head = success
           ? `烤${targetName}的「${pig.name}」成功！\n${dish.name}已出入菜谱\n`
           : `💔 烤${targetName}的「${pig.name}」失败！\n`
-        await e.reply([...at(e), head, img, getButtons()])
+        await e.reply([...at(e), head, img, getButtons(e)])
       } catch (renderErr) {
         logger.error("[RollPig-Plugin] 烤群友渲染失败:", renderErr)
         const msg = []
         const fallbackImg = fs.existsSync(dishImagePath) ? dishImagePath : pigImageFile
-        if (fallbackImg) msg.push(makeImage(fallbackImg))
+        if (fallbackImg) msg.push(await makeImage(fallbackImg))
         if (success) {
           msg.push(`\n🎉 烤${targetName}的「${pig.name}」成功！\n${sourceText}【${pig.name}】做成【${dish.name}】！\n> ${dish.desc}\n> ${pig.description}\n> 真香！评语：${dish.review}`)
         } else {
           msg.push(`\n💔 烤${targetName}的「${pig.name}」失败...\n${sourceText}【${pig.name}】做【${dish.name}】翻车了！\n> ${failLine}\n> ${pig.description}`)
         }
-        await e.reply([...at(e), "\n", ...msg, getButtons()])
+        await e.reply([...at(e), "\n", ...msg, getButtons(e)])
       } finally {
         cleanupScreenshot(saveId)
       }
@@ -732,10 +715,6 @@ export class TodayPig extends plugin {
       if (!await ensureNotSelf(e, targetId, "不能偷自己的小猪哦~找别的群友试试吧！")) return true
       const targetName = await getMemberName(e, targetId) || "群友"
 
-      if (hasDoneToday(userRecords, myId, date, "stealDate")) {
-        await e.reply([...at(e), "今天已经偷过小猪了，明天再来吧！", getButtons()])
-        return true
-      }
 
       const { pig, source } = resolvePig(e, targetId, date, userRecords)
       if (!await ensureHasTodayPig(e, pig, "TA还没有今日小猪，图鉴也是空的~\n请让TA发「/今日小猪」后再偷TA的小猪")) return true
@@ -744,7 +723,7 @@ export class TodayPig extends plugin {
 
       const stealResult = recordSteal(e, myId, date, success ? pig.id : null)
       if (!stealResult.recorded) {
-        await e.reply([...at(e), "今天已经偷过了哦~", getButtons()])
+        await e.reply([...at(e), "今天已经偷过了哦~", getButtons(e)])
         return true
       }
 
@@ -755,9 +734,9 @@ export class TodayPig extends plugin {
         ...at(e),
         `${success ? "🎉" : "💔"} 偷${targetName}的${sourceText}「${pig.name}」${success ? "成功" : "失败"}！\n`,
       ]
-      if (pigImageFile) msg.push(makeImage(pigImageFile))
+      if (pigImageFile) msg.push(await makeImage(pigImageFile))
       if (success) msg.push(`\n\n【${pig.name}】已存入你的图鉴`)
-      msg.push(getButtons())
+      msg.push(getButtons(e))
       await e.reply(msg)
       return true
     } catch (error) {
@@ -780,10 +759,10 @@ export class TodayPig extends plugin {
         pageGotoParams: { waitUntil: "load" },
       })
       if (!img) throw new Error("截图返回空")
-      await e.reply([...at(e), "\n", img, getButtons()])
+      await e.reply([...at(e), "\n", img, getButtons(e)])
     } catch (renderErr) {
       logger.error("[RollPig-Plugin] 小猪帮助渲染失败:", renderErr)
-      await e.reply([...at(e), fallback.join("\n"), getButtons()])
+      await e.reply([...at(e), fallback.join("\n"), getButtons(e)])
     } finally {
       cleanupScreenshot(saveId)
     }

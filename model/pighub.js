@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto"
-import { existsSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { mkdir, rename, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -22,11 +22,7 @@ const PIGHUB_RESOURCE_DIR = path.resolve(MODEL_DIR, "../resources/pighub")
 const PIGHUB_JSON_PATH = path.join(PIGHUB_RESOURCE_DIR, "images.json")
 const PIGHUB_IMAGE_DIR = path.join(PIGHUB_RESOURCE_DIR, "image")
 
-let cachedStore
 let syncPromise
-let _readyCache = null
-let _readyCacheTime = 0
-const _READY_CACHE_TTL = 5 * 60 * 1000
 
 function normalizeExtension(extension) {
   return extension.toLowerCase() === ".jpeg" ? ".jpg" : extension.toLowerCase()
@@ -117,19 +113,14 @@ function loadPigHubStore(file = PIGHUB_JSON_PATH) {
 }
 
 export function getPigHubStore() {
-  cachedStore ??= loadPigHubStore()
-  return cachedStore
+  return loadPigHubStore()
 }
 
 export function isPigHubReady() {
-  if (_readyCache !== null && Date.now() - _readyCacheTime < _READY_CACHE_TTL) return _readyCache
   try {
     const store = getPigHubStore()
-    _readyCache = store.images.every(image =>
-      getFileSize(path.join(PIGHUB_IMAGE_DIR, image.local_file)) === image.size
-    )
-    _readyCacheTime = Date.now()
-    return _readyCache
+    const files = readdirSync(PIGHUB_IMAGE_DIR)
+    return files.length >= store.count
   } catch {
     return false
   }
@@ -249,15 +240,12 @@ async function syncPigHubStore() {
   const tempFile = `${PIGHUB_JSON_PATH}.tmp`
   await writeFile(tempFile, `${JSON.stringify(store, null, 2)}\n`, "utf8")
   await rename(tempFile, PIGHUB_JSON_PATH)
-  cachedStore = loadPigHubStore()
-  return { ...cachedStore, _failed: failed }
+  return { ...loadPigHubStore(), _failed: failed }
 }
 
 export function ensurePigHubSynced() {
   if (isPigHubReady()) return Promise.resolve(getPigHubStore())
   syncPromise ??= syncPigHubStore().finally(() => {
-    _readyCache = null
-    _readyCacheTime = 0
     syncPromise = null
   })
   return syncPromise

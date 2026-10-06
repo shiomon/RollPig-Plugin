@@ -1,4 +1,4 @@
-import { esc, FONT_LINK, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
 
 export function generateCookHTML(data) {
 
@@ -17,10 +17,11 @@ export function generateCookHTML(data) {
 <html>
 <head>
 <meta charset="utf-8">
-${FONT_LINK}
+${getFontLink()}
 <style>
   ${BASE_RESET_CSS}
-  body { background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 50%, #ffe0b2 100%); ${BODY_FONT} padding: 24px; width: 520px; }
+  body { margin: 0; }
+  #container { background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 50%, #ffe0b2 100%); ${BODY_FONT} padding: 24px; width: 520px; }
   .header { text-align: center; margin-bottom: 8px; font-size: 24px; color: #1a1a1a; font-weight: bold; }
   .subtitle { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 16px; }
   .subtitle.success { color: #e65100; }
@@ -41,6 +42,7 @@ ${FONT_LINK}
 </style>
 </head>
 <body>
+<div id="container">
   <div class="header">🐷 烤群友</div>
   ${subtitle}
   <div class="images">
@@ -63,7 +65,8 @@ ${FONT_LINK}
   </div>
   <div class="divider"></div>
   ${reviewSection}
-  <div class="footer">${data.success ? '你这猪蹄做菜还真太难呢' : '明天洗个手试试~'}</div>
+  <div class="footer">${data.success ? '下次还找你做菜~' : '明天洗个手试试~'}</div>
+</div>
 </body>
 </html>`
 }

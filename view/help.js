@@ -1,4 +1,4 @@
-import { esc, FONT_LINK, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
 import { HELP_GROUPS } from "../model/helpData.js"
 
 export function generateHelpHTML() {
@@ -20,10 +20,11 @@ export function generateHelpHTML() {
 <html>
 <head>
 <meta charset="utf-8">
-${FONT_LINK}
+${getFontLink()}
 <style>
   ${BASE_RESET_CSS}
-  body { width: 540px; padding: 24px; background: linear-gradient(150deg, #d3e4ff 0%, #c3d3ff 45%, #ffc6dc 100%); ${BODY_FONT} }
+  body { margin: 0; }
+  #container { width: 540px; padding: 24px; background: linear-gradient(150deg, #d3e4ff 0%, #c3d3ff 45%, #ffc6dc 100%); ${BODY_FONT} }
   .card { padding: 26px 24px 20px; border-radius: 22px; background: rgb(255 255 255 / 80%); box-shadow: 0 18px 44px rgb(120 140 170 / 38%); }
   .title { text-align: center; color: #e26c82; font-size: 34px; font-weight: 800; }
   .subtitle { margin: 8px 0 20px; text-align: center; color: #3f4d63; font-size: 14px; }
@@ -38,12 +39,14 @@ ${FONT_LINK}
 </style>
 </head>
 <body>
+<div id="container">
   <div class="card">
     <div class="title">🐷 小猪帮助</div>
     <div class="subtitle">收集小猪图鉴和菜谱吧，偷群友的也不错哦~</div>
     ${groups}
     <div class="footer">点击下方按钮或相应指令快速开始</div>
   </div>
+</div>
 </body>
 </html>`
 }

@@ -1,4 +1,4 @@
-import { esc, FONT_LINK, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
+import { esc, getFontLink, BASE_RESET_CSS, BODY_FONT } from "../utils/html.js"
 
 export function generateRankHTML(top, total) {
   const medals = ['🥇', '🥈', '🥉']
@@ -24,10 +24,11 @@ export function generateRankHTML(top, total) {
 <html>
 <head>
 <meta charset="utf-8">
-${FONT_LINK}
+${getFontLink()}
 <style>
   ${BASE_RESET_CSS}
-  body { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 700px; }
+  body { margin: 0; }
+  #container { background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #fff5f8 100%); ${BODY_FONT} padding: 24px; width: 700px; }
   .header { text-align: center; margin-bottom: 20px; }
   .title { font-size: 26px; color: #1a1a1a; font-weight: bold; }
   .subtitle { font-size: 14px; color: #444; margin-top: 6px; }
@@ -49,12 +50,14 @@ ${FONT_LINK}
 </style>
 </head>
 <body>
+<div id="container">
   <div class="header">
     <div class="title">🐷 小猪图鉴排行</div>
     <div class="subtitle">共 ${top.length} 位用户 | 总数 ${total} 只小猪</div>
   </div>
   ${rows}
   <div class="footer">发送「/今日小猪」收集更多小猪~</div>
+</div>
 </body>
 </html>`
 }

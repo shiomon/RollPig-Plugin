@@ -6,11 +6,18 @@ export const STEAL_SUCCESS_RATE = 0.3
 export const RANDOM_PIG_MAX = 5
 export const RANK_LIMIT = 50
 
-export function getButtons() {
+export function isQQBot(e) {
+  return e?.bot?.version?.id === "QQBot" || e?.adapter_id === "QQBot"
+}
+
+const NON_QQ_TIP = "可发：/今日小猪 /小猪图鉴 /小猪排行 /小猪配种 /烤群友 /偷猪"
+
+export function getButtons(e) {
+  if (!isQQBot(e)) return NON_QQ_TIP
   return segment.button(
     [
       { text: "今日小猪", callback: "/今日小猪" },
-      { text: "猪圈和菜", callback: "/我的猪圈" },
+      { text: "小猪图鉴", callback: "/小猪图鉴" },
       { text: "小猪排行", callback: "/小猪排行" }
     ],
     [
