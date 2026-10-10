@@ -448,14 +448,23 @@ export class TodayPig extends plugin {
       const date = getShanghaiDate()
       const myId = String(e.user_id)
 
-      const targetId = normalizeAtId(e.at)
-      if (!targetId) {
-        await e.reply("请@群友进行配种~\n如：@群友/小猪配种")
-        return true
-      }
-
       const breedData = loadBreedData(e, myId, date)
       const userRecords = breedData.userRecords
+
+      let targetId = normalizeAtId(e.at)
+      if (targetId && String(targetId) === String(e.self_id)) targetId = null
+      if (!targetId) {
+        const candidates = Object.keys(userRecords).filter(id => {
+          if (String(id) === myId || String(id) === String(e.self_id)) return false
+          const record = userRecords[id]
+          return Boolean(record?.pig_id) || Object.keys(record?.collected || {}).length > 0
+        })
+        if (candidates.length === 0) {
+          await e.reply("本群还没有其他群友抽过小猪~\n可以先让群友发「/今日小猪」哦~")
+          return true
+        }
+        targetId = candidates[Math.floor(Math.random() * candidates.length)]
+      }
 
       if (!await ensureNotSelf(e, targetId, "不能和自己配种哦~找别的群友试试吧！")) return true
 
@@ -600,20 +609,30 @@ export class TodayPig extends plugin {
 
   async pigRoast(e) {
     if (!await ensureGroup(e, "烤群友")) return true
-    if (!e.at) {
-      await e.reply("请@群友烤~\n如：@群友/烤群友")
-      return true
-    }
 
     try {
       const date = getShanghaiDate()
       const myId = String(e.user_id)
 
-      const targetId = normalizeAtId(e.at)
+      const userRecords = getUserRecords(e)
+
+      let targetId = normalizeAtId(e.at)
+      if (targetId && String(targetId) === String(e.self_id)) targetId = null
+      if (!targetId) {
+        const candidates = Object.keys(userRecords).filter(id => {
+          if (String(id) === myId || String(id) === String(e.self_id)) return false
+          const record = userRecords[id]
+          return Boolean(record?.pig_id) || Object.keys(record?.collected || {}).length > 0
+        })
+        if (candidates.length === 0) {
+          await e.reply("本群还没有其他群友抽过小猪~\n可以先让群友发「/今日小猪」哦~")
+          return true
+        }
+        targetId = candidates[Math.floor(Math.random() * candidates.length)]
+      }
+
       if (!await ensureNotSelf(e, targetId, "不能烤自己的小猪哦~找别的群友试试吧！")) return true
       const targetName = await getMemberName(e, targetId) || "群友"
-
-      const userRecords = getUserRecords(e)
 
       const pigMap = getPigMap()
       const { pig: myPig } = resolvePig(e, myId, date, userRecords, pigMap)

@@ -10,7 +10,7 @@ export function isQQBot(e) {
   return e?.bot?.version?.id === "QQBot" || e?.adapter_id === "QQBot"
 }
 
-const NON_QQ_TIP = "可发：/今日小猪 /小猪图鉴 /小猪排行 /小猪配种 /烤群友 /偷猪"
+const NON_QQ_TIP = "可发：/今日小猪 /小猪图鉴 /小猪排行\n可@人：/小猪配种 /烤群友 /偷猪"
 
 export function getButtons(e) {
   if (!isQQBot(e)) return NON_QQ_TIP
